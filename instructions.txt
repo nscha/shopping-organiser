@@ -1,0 +1,13 @@
+set ANT_HOME=c:\Docume~1\nscha\MyDocu~1\MyProg~1\apache-ant-1.8.2
+set JAVA_HOME=c:\Progra~1\Java\jdk1.6.0_13
+set PATH=%PATH%;%ANT_HOME%\bin
+ant debug
+
+Correr el emulator desde el SDK Manager
+adb devices
+(para confirmar que quedo registrado)
+
+adb install -r c:\android\real_shopping_list\bin\real_shopping_list-debug.apk
+
+Android Browse Source Code 						
+http://android.git.kernel.org/?p=platform/frameworks/base.git;a=tree;f=core/java/android;hb=HEAD

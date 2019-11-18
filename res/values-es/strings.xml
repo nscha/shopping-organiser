@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Lista de Compras Posta</string><string name="select_all">Marcar Todos</string><string name="select_none">Desmarcar Todos</string>
+    <string name="empty_list">Esta lista esta vacia</string>
+    <string name="add_item">Agregar</string>
+    <string name="remove_item">Eliminar</string>
+    <string name="cancel_menu">Cancelar</string>
+    <string name="list_name_home">Casa</string>
+    <string name="list_name_shop">Super</string>
+    <string name="list_selector">Elegir Lista</string>
+    <string name="reorder">Reordenar</string>
+    <string name="quit_reorder">Listo</string>
+    <string name="reordering">Reordenando</string>
+    
+</resources>

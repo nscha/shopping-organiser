@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Real Shopping List</string><string name="select_all">Select All</string><string name="select_none">Select None</string>
+    <string name="empty_list">This List is Empty</string>
+    <string name="add_item">Add Item</string>
+    <string name="remove_item">Remove Item</string>
+    <string name="cancel_menu">Cancel</string>
+    <string name="list_name_home">Home</string>
+    <string name="list_name_shop">Shop</string>
+    <string name="list_selector">Select List</string>
+    <string name="reorder">Reorder</string>
+    <string name="quit_reorder">Done</string>
+    <string name="reordering">Reordering</string>
+    
+</resources>
