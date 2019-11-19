@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:padding="20dip">
+    <LinearLayout
+		android:id="@+id/addListLine"
+		android:layout_width="fill_parent"
+		android:layout_height="?android:attr/listPreferredItemHeight">
+		<EditText
+			android:id="@+id/newListNameEditText"  
+		    android:layout_width="0dip" 
+		    android:layout_height="wrap_content"
+		    android:layout_weight="1"
+		    android:hint="@string/new_list"
+		    android:inputType="text"
+	    />
+	    <ImageButton android:id="@+id/addListButton" 
+	            android:layout_width="wrap_content" 
+	            android:layout_height="wrap_content"
+	            android:src="@drawable/iconnew"
+	            android:contentDescription="@string/add_item" 
+	            android:onClick="addNewList"
+		/>
+	</LinearLayout>
+	<ListView
+		android:id="@id/android:list"
+		android:layout_width="fill_parent"
+		android:layout_height="fill_parent"
+		android:layout_below="@id/addListLine"
+	/>
+</RelativeLayout>

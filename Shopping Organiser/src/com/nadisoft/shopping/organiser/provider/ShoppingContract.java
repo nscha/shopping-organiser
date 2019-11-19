@@ -3,7 +3,7 @@ package com.nadisoft.shopping.organiser.provider;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
-public class ShoppingOrganiserContract {
+public class ShoppingContract {
 	/**
      * The authority for app contents.
      */
@@ -28,6 +28,7 @@ public class ShoppingOrganiserContract {
 		String ITEM_NAME = "item_name";
 		String ITEM_NEEDED = "item_needed";
 		String ITEM_BOUGHT = "item_bought";
+		String ITEM_TMP_POSITION = "item_tmp_pos"; //DELME
 	}
 
     interface ListColumns {
@@ -77,14 +78,25 @@ public class ShoppingOrganiserContract {
 
 		/** Default projection */
 		public static final String[] DEFAULT_PROJECTION = new String[] {
-				ShoppingOrganiserContract.Items._ID, ShoppingOrganiserContract.Items.ITEM_NAME,
-				ShoppingOrganiserContract.Items.ITEM_NEEDED, ShoppingOrganiserContract.Items.ITEM_BOUGHT };
+				ShoppingContract.Items._ID, ShoppingContract.Items.ITEM_NAME,
+				ShoppingContract.Items.ITEM_NEEDED, ShoppingContract.Items.ITEM_BOUGHT
+				,ShoppingContract.Items.ITEM_TMP_POSITION // DELME
+				};
         /** Default "ORDER BY" clause. */
-        public static final String DEFAULT_SORT = BaseColumns._ID + " ASC";
+        public static final String DEFAULT_SORT = ITEM_TMP_POSITION + " ASC"; // DELME
+//        public static final String DEFAULT_SORT = BaseColumns._ID + " ASC";
 
     	/** Build {@link Uri} for request all messages. */
         public static Uri buildItemsUri() {
             return CONTENT_URI.buildUpon().build();
+        }
+
+        public static Uri buildMoveItemUri(long id, int from, int to) {
+            return CONTENT_URI.buildUpon()
+            	.appendPath(Long.toString(id))
+            	.appendPath(Integer.toString(from))
+            	.appendPath(Integer.toString(to))
+            	.build();
         }
 
         /** Build {@link Uri} for requested message. */
@@ -103,8 +115,8 @@ public class ShoppingOrganiserContract {
 
 		/** Default projection */
 		public static final String[] DEFAULT_PROJECTION = new String[] {
-				ShoppingOrganiserContract.Lists._ID, ShoppingOrganiserContract.Lists.LIST_NAME,
-				ShoppingOrganiserContract.Lists.LIST_SETS_FILTER };
+				ShoppingContract.Lists._ID, ShoppingContract.Lists.LIST_NAME,
+				ShoppingContract.Lists.LIST_SETS_FILTER };
         /** Default "ORDER BY" clause. */
         public static final String DEFAULT_SORT = LIST_SETS_FILTER + " DESC, " +BaseColumns._ID + " ASC";
 
@@ -130,9 +142,9 @@ public class ShoppingOrganiserContract {
 
 		/** Default projection */
 		public static final String[] DEFAULT_PROJECTION = new String[] {
-				ShoppingOrganiserContract.Orderings._ID, ShoppingOrganiserContract.Items.ITEM_NAME,
-				ShoppingOrganiserContract.Items.ITEM_NEEDED, ShoppingOrganiserContract.Items.ITEM_BOUGHT, 
-				ShoppingOrganiserContract.Orderings.ORDERING_POSITION };
+				ShoppingContract.Orderings._ID, ShoppingContract.Items.ITEM_NAME,
+				ShoppingContract.Items.ITEM_NEEDED, ShoppingContract.Items.ITEM_BOUGHT, 
+				ShoppingContract.Orderings.ORDERING_POSITION };
         /** Default "ORDER BY" clause. */
         public static final String DEFAULT_SORT = ORDERING_POSITION + " ASC";
 

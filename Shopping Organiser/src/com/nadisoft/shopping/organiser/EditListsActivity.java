@@ -9,6 +9,7 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.InputType;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.EditText;
@@ -19,33 +20,33 @@ import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockListActivity;
 import com.nadisoft.shopping.organiser.entities.ShoppingList;
-import com.nadisoft.shopping.organiser.provider.ShoppingOrganiserContract;
+import com.nadisoft.shopping.organiser.provider.ShoppingContract;
 
 public class EditListsActivity extends SherlockListActivity{
-	private EditText editText;
+	private EditText newListNameEditText;
 	private EditText editListNameEditText;
 	private ShoppingList listOnEdition;
 
-	static final int DIALOG_LIST_NAME = 0;
+	static final int DIALOG_EDIT_LIST_NAME = 0;
+	static final int DIALOG_CONFIRM_LIST_DELETE = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.lists);
+        setContentView(R.layout.edit_lists);
 
-        editText = (EditText) findViewById(R.id.newListNameEditText);
+        newListNameEditText = (EditText) findViewById(R.id.newListNameEditText);
         ListView lv = getListView();
-        lv.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 
 		@SuppressWarnings("deprecation")
-		Cursor cursor = managedQuery(ShoppingOrganiserContract.Lists.buildListsUri(), 
+		Cursor cursor = managedQuery(ShoppingContract.Lists.buildListsUri(), 
 				null, null, null, null);
 		@SuppressWarnings("deprecation")
 		SimpleCursorAdapter listAdapter = new SimpleCursorAdapter(this,
 				R.layout.list_item, cursor,
-				new String[] { ShoppingOrganiserContract.Lists.LIST_NAME,
-				ShoppingOrganiserContract.Lists._ID,
-				ShoppingOrganiserContract.Lists._ID },
+				new String[] { ShoppingContract.Lists.LIST_NAME,
+				ShoppingContract.Lists._ID,
+				ShoppingContract.Lists._ID },
 				new int[] { R.id.listItemText,
 				R.id.editListButton,
 				R.id.removeListButton });
@@ -86,10 +87,8 @@ public class EditListsActivity extends SherlockListActivity{
 					view.setOnClickListener(new OnClickListener() {
 						@Override
 						public void onClick(View v) {
-							Object tag = v.getTag();
-							if (tag != null){
-								EditListsActivity.this.removeList((Long) tag);
-							}
+							long id = (Long)v.getTag();
+							EditListsActivity.this.startDeletingList(id);
 						}
 					});
 					return true;
@@ -104,8 +103,11 @@ public class EditListsActivity extends SherlockListActivity{
 	protected Dialog onCreateDialog(int id) {
         Dialog dialog;
         switch(id) {
-        case DIALOG_LIST_NAME:
+        case DIALOG_EDIT_LIST_NAME:
             dialog = createEditListNameDialog();
+            break;
+        case DIALOG_CONFIRM_LIST_DELETE:
+            dialog = createConfirmDeleteListDialog();
             break;
         default:
             dialog = null;
@@ -116,9 +118,11 @@ public class EditListsActivity extends SherlockListActivity{
 	@Override
 	protected void onPrepareDialog(int id, Dialog dialog) {
 		switch(id) {
-        case DIALOG_LIST_NAME:
+        case DIALOG_EDIT_LIST_NAME:
             dialog = prepareEditListNameDialog(dialog);
             break;
+        case DIALOG_CONFIRM_LIST_DELETE:
+        	break;
         default:
             dialog = null;
         }
@@ -126,6 +130,7 @@ public class EditListsActivity extends SherlockListActivity{
 
 	private Dialog createEditListNameDialog(){
 		editListNameEditText = new EditText(this);
+		editListNameEditText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_NORMAL);
 		editListNameEditText.setTextColor(Color.WHITE);
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setMessage(R.string.list_name_prompt)
@@ -139,11 +144,30 @@ public class EditListsActivity extends SherlockListActivity{
 	    	}).setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
 	    		@Override
 				public void onClick(DialogInterface dialog, int whichButton) {
-	    			listOnEdition = null;
+	    			endEditingList(null);
 	    		}
 	    	});
-		
-		return builder.show();
+
+		return builder.create();
+	}
+
+	private Dialog createConfirmDeleteListDialog(){
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setMessage(R.string.list_del_prompt)
+	    	.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+	    		@Override
+				public void onClick(DialogInterface dialog, int whichButton) {
+	    			endDeletingList(true);
+	    		}
+
+	    	}).setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+	    		@Override
+				public void onClick(DialogInterface dialog, int whichButton) {
+	    			endDeletingList(false);
+	    		}
+	    	});
+
+		return builder.create();
 	}
 
 	private Dialog prepareEditListNameDialog(Dialog dialog) {
@@ -152,66 +176,82 @@ public class EditListsActivity extends SherlockListActivity{
 	}
 
 	public void addNewList(View view) {
-		String name = editText.getText().toString();
+		String name = newListNameEditText.getText().toString();
     	if ( name.length() > 0 ) {
     		createList(name);
-			editText.setText("");
+			newListNameEditText.setText("");
     	}
     }
-
-	private void createList(String name) {
-		ContentResolver contentResolver = getContentResolver();
-		Uri url = ShoppingOrganiserContract.Lists.buildListsUri();
-		ContentValues values = new ContentValues();
-		values.put(ShoppingOrganiserContract.Lists.LIST_NAME, name);
-		values.put(ShoppingOrganiserContract.Lists.LIST_SETS_FILTER, false);
-		contentResolver.insert(url, values);
-	}
 
     @SuppressWarnings("deprecation")
 	private void startEditingList(long id) {
 		listOnEdition = getShoppingList(id);
-		showDialog(DIALOG_LIST_NAME);
+		showDialog(DIALOG_EDIT_LIST_NAME);
 	}
 
     private void endEditingList(String newName) {
     	long id = listOnEdition.getId();
-    	String oldName = listOnEdition.getName();
+    	if ( newName != null ){
+        	String oldName = listOnEdition.getName();
+    		editList(id, oldName, newName);    		
+    	}
     	listOnEdition = null;
-		editList(id, oldName, newName);
+	}
+
+    @SuppressWarnings("deprecation")
+	private void startDeletingList(long id) {
+		listOnEdition = getShoppingList(id);
+		showDialog(DIALOG_CONFIRM_LIST_DELETE);
+	}
+
+    private void endDeletingList(boolean confirmed) {
+    	long id = listOnEdition.getId();
+    	listOnEdition = null;
+    	if ( confirmed ){
+    		deleteList(id);
+    	}
 	}
 
 	private ShoppingList getShoppingList(long id) {
 		ContentResolver contentResolver = getContentResolver();
-		Uri uri = ShoppingOrganiserContract.Lists.buildListUri(id);
+		Uri uri = ShoppingContract.Lists.buildListUri(id);
 		Cursor cursor = contentResolver.query(uri, null, null, null, null);
 		cursor.moveToFirst();
-		String name = cursor.getString(cursor.getColumnIndex(ShoppingOrganiserContract.Lists.LIST_NAME));
+		String name = cursor.getString(cursor.getColumnIndex(ShoppingContract.Lists.LIST_NAME));
 		boolean setsFilter = pointedListSetsFilter(cursor);
 		ShoppingList shoppingList = new ShoppingList(name, setsFilter);
 		shoppingList.setId(id);
 		return shoppingList;
 	}
 
+	private void createList(String name) {
+		ContentResolver contentResolver = getContentResolver();
+		Uri url = ShoppingContract.Lists.buildListsUri();
+		ContentValues values = new ContentValues();
+		values.put(ShoppingContract.Lists.LIST_NAME, name);
+		values.put(ShoppingContract.Lists.LIST_SETS_FILTER, false);
+		contentResolver.insert(url, values);
+	}
+
 	private boolean pointedListSetsFilter(Cursor cursor) {
-		return 1 == cursor.getInt(cursor.getColumnIndex(ShoppingOrganiserContract.Lists.LIST_SETS_FILTER));
+		return 1 == cursor.getInt(cursor.getColumnIndex(ShoppingContract.Lists.LIST_SETS_FILTER));
 	}
 
 	private void editList(long id, String oldName, String newName)
 	{
 		ContentResolver contentResolver = getContentResolver();
-		Uri url = ShoppingOrganiserContract.Lists.buildListUri(id);
+		Uri url = ShoppingContract.Lists.buildListUri(id);
 		ContentValues values = new ContentValues();
 		if ( !oldName.equals(newName.trim()) ) {
-			values.put(ShoppingOrganiserContract.Lists.LIST_NAME, newName);
+			values.put(ShoppingContract.Lists.LIST_NAME, newName);
 			contentResolver.update(url, values, null, null);
 		}
 	}
 
-	private void removeList(long id)
+	private void deleteList(long id)
 	{
 		ContentResolver contentResolver = getContentResolver();
-		Uri url = ShoppingOrganiserContract.Lists.buildListUri(id);
+		Uri url = ShoppingContract.Lists.buildListUri(id);
 		contentResolver.delete(url, null, null);
 	}
 }

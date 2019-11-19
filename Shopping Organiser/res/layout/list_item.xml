@@ -32,28 +32,3 @@
 		/>
 
 </LinearLayout>
-
-<!-- simple_list_item_1.xml on ICS
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@android:id/text1"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:textAppearance="?android:attr/textAppearanceListItemSmall"
-    android:gravity="center_vertical"
-    android:paddingLeft="?android:attr/listPreferredItemPaddingLeft"
-    android:paddingRight="?android:attr/listPreferredItemPaddingRight"
-    android:minHeight="?android:attr/listPreferredItemHeightSmall"
-/>
--->
-
-<!-- simple_list_item_1.xml on Eclair
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@android:id/text1"
-    android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
-    android:textAppearance="?android:attr/textAppearanceLarge"
-    android:gravity="center_vertical"
-    android:paddingLeft="6dip"
-    android:minHeight="?android:attr/listPreferredItemHeight"
-/>
--->

@@ -1,5 +1,7 @@
 package com.nadisoft.shopping.organiser.provider;
 
+import java.util.Arrays;
+
 import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.UriMatcher;
@@ -9,11 +11,12 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.text.TextUtils;
+import android.util.Log;
 
-import com.nadisoft.shopping.organiser.provider.ShoppingOrganiserContract.Items;
-import com.nadisoft.shopping.organiser.provider.ShoppingOrganiserContract.Lists;
+import com.nadisoft.shopping.organiser.provider.ShoppingContract.Items;
+import com.nadisoft.shopping.organiser.provider.ShoppingContract.Lists;
 
-public class MyProvider extends ContentProvider {
+public class ShoppingProvider extends ContentProvider {
 	/**
      * {@link UriMatcher} to determine what is requested to this {@link ContentProvider}.
      */
@@ -23,6 +26,7 @@ public class MyProvider extends ContentProvider {
      */
     private static final int ITEMS = 100; // all items
     private static final int ITEMS_ID = 101; // one item by id
+    private static final int ITEMS_MOVE = 102; // move an item
     private static final int LISTS = 110; // all lists
     private static final int LISTS_ID = 111; // one list by id
     private static final int ITEMS_LIST_ID = 121; // items on a list by list id
@@ -30,7 +34,7 @@ public class MyProvider extends ContentProvider {
     /**
      * Local DB Helper
      */
-    private MyDatabase mOpenHelper;
+    private ShoppingDatabase mOpenHelper;
 
     /**
      * Build and return a {@link UriMatcher} that catches all {@link Uri}
@@ -38,10 +42,11 @@ public class MyProvider extends ContentProvider {
      */
     private static UriMatcher buildUriMatcher() {
         final UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
-        final String authority = ShoppingOrganiserContract.CONTENT_AUTHORITY;
+        final String authority = ShoppingContract.CONTENT_AUTHORITY;
 
         matcher.addURI(authority, "items", ITEMS);
         matcher.addURI(authority, "items/*", ITEMS_ID);
+        matcher.addURI(authority, "items/*/*/*", ITEMS_MOVE);
         matcher.addURI(authority, "lists", LISTS);
         matcher.addURI(authority, "lists/*", LISTS_ID);
 /*
@@ -53,7 +58,7 @@ public class MyProvider extends ContentProvider {
     /** {@inheritDoc} */
     @Override
     public boolean onCreate() {
-        mOpenHelper = new MyDatabase(getContext());
+        mOpenHelper = new ShoppingDatabase(getContext());
         return true;
     }
 
@@ -88,26 +93,26 @@ public class MyProvider extends ContentProvider {
         String defaultSortOrder;        
         switch (sUriMatcher.match(uri)) {
 	        case ITEMS:
-	            qb.setTables(MyDatabase.Tables.ITEMS);
-	        	defaultProjection = ShoppingOrganiserContract.Items.DEFAULT_PROJECTION;
-	        	defaultSortOrder = ShoppingOrganiserContract.Items.DEFAULT_SORT;
+	            qb.setTables(ShoppingDatabase.Tables.ITEMS);
+	        	defaultProjection = ShoppingContract.Items.DEFAULT_PROJECTION;
+	        	defaultSortOrder = ShoppingContract.Items.DEFAULT_SORT;
 	            break;
 	        case ITEMS_ID:
-	            qb.setTables(MyDatabase.Tables.ITEMS);
-	        	defaultProjection = ShoppingOrganiserContract.Items.DEFAULT_PROJECTION;
-	        	defaultSortOrder = ShoppingOrganiserContract.Items.DEFAULT_SORT;
-	        	qb.appendWhere(ShoppingOrganiserContract.Items._ID + "=" + uri.getPathSegments().get(1));
+	            qb.setTables(ShoppingDatabase.Tables.ITEMS);
+	        	defaultProjection = ShoppingContract.Items.DEFAULT_PROJECTION;
+	        	defaultSortOrder = ShoppingContract.Items.DEFAULT_SORT;
+	        	qb.appendWhere(ShoppingContract.Items._ID + "=" + uri.getPathSegments().get(1));
 	            break;
 	        case LISTS:
-	            qb.setTables(MyDatabase.Tables.LISTS);
-	        	defaultProjection = ShoppingOrganiserContract.Lists.DEFAULT_PROJECTION;
-	        	defaultSortOrder = ShoppingOrganiserContract.Lists.DEFAULT_SORT;
+	            qb.setTables(ShoppingDatabase.Tables.LISTS);
+	        	defaultProjection = ShoppingContract.Lists.DEFAULT_PROJECTION;
+	        	defaultSortOrder = ShoppingContract.Lists.DEFAULT_SORT;
 	            break;
 	        case LISTS_ID:
-	            qb.setTables(MyDatabase.Tables.LISTS);
-	        	defaultProjection = ShoppingOrganiserContract.Lists.DEFAULT_PROJECTION;
-	        	defaultSortOrder = ShoppingOrganiserContract.Lists.DEFAULT_SORT;
-	        	qb.appendWhere(ShoppingOrganiserContract.Lists._ID + "=" + uri.getPathSegments().get(1));
+	            qb.setTables(ShoppingDatabase.Tables.LISTS);
+	        	defaultProjection = ShoppingContract.Lists.DEFAULT_PROJECTION;
+	        	defaultSortOrder = ShoppingContract.Lists.DEFAULT_SORT;
+	        	qb.appendWhere(ShoppingContract.Lists._ID + "=" + uri.getPathSegments().get(1));
 	            break;
 /*
 	        case ITEMS_LIST_ID:
@@ -168,12 +173,16 @@ public class MyProvider extends ContentProvider {
         Uri noteUri;
         switch (sUriMatcher.match(uri)) {
 	        case ITEMS:
-	        	rowId = db.insert(MyDatabase.Tables.ITEMS, null, values);
-	        	noteUri = ShoppingOrganiserContract.Items.buildItemUri(rowId);
+	        	Integer intendedPosition = values.getAsInteger(ShoppingContract.Items.ITEM_TMP_POSITION);
+	        	if (intendedPosition == null) { //DELME
+	        		values.put(ShoppingContract.Items.ITEM_TMP_POSITION, getAvailablePosition(db));
+	        	}
+	        	rowId = db.insert(ShoppingDatabase.Tables.ITEMS, null, values);
+	        	noteUri = ShoppingContract.Items.buildItemUri(rowId);
 	            break;
 	        case LISTS:
-	        	rowId = db.insert(MyDatabase.Tables.LISTS, null, values);
-	        	noteUri = ShoppingOrganiserContract.Lists.buildListUri(rowId);
+	        	rowId = db.insert(ShoppingDatabase.Tables.LISTS, null, values);
+	        	noteUri = ShoppingContract.Lists.buildListUri(rowId);
 	            break;
 	        default:
 	            throw new IllegalArgumentException("Unknown URI " + uri);
@@ -187,27 +196,45 @@ public class MyProvider extends ContentProvider {
         throw new SQLException("Failed to insert row into " + uri);
     }
 
-    @Override
+    private int getAvailablePosition(SQLiteDatabase db) { //DELME
+    	String[] projection = new String[] { "max("+ShoppingContract.Items.ITEM_TMP_POSITION+")"}; 
+		Cursor cursor = db.query(ShoppingDatabase.Tables.ITEMS, projection, null, null, null, null, null);
+		cursor.moveToFirst();
+		if (cursor.isNull(0)){
+			Log.d("NADIA","EMPTY -> available position "+0);
+			return 0;
+		}
+		int pos = cursor.getInt(0) + 1;
+		cursor.close();
+		Log.d("NADIA","available position "+pos);
+		return pos;
+	}
+
+	@Override
     public int delete(Uri uri, String where, String[] whereArgs) {
         SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         int count;
         switch (sUriMatcher.match(uri)) {
 	        case ITEMS:
-	            count = db.delete(MyDatabase.Tables.ITEMS, where, whereArgs);
+	            count = db.delete(ShoppingDatabase.Tables.ITEMS, where, whereArgs);
 	            break;
 	        case ITEMS_ID:
 	            String itemId = uri.getPathSegments().get(1);
-	            count = db.delete(MyDatabase.Tables.ITEMS,
-	            		ShoppingOrganiserContract.Items._ID + "=" + itemId +
+	            Cursor cursor = query(uri,null,null,null,null);
+	            cursor.moveToFirst();
+	            int pos = cursor.getInt(cursor.getColumnIndex(ShoppingContract.Items.ITEM_TMP_POSITION));
+	            count = db.delete(ShoppingDatabase.Tables.ITEMS,
+	            		ShoppingContract.Items._ID + "=" + itemId +
 	            		(!TextUtils.isEmpty(where) ? " AND (" + where + ')' : ""), whereArgs);
+	            arrangeItemsForDelete(db, pos);
 	            break;
 	        case LISTS:
-	            count = db.delete(MyDatabase.Tables.LISTS, where, whereArgs);
+	            count = db.delete(ShoppingDatabase.Tables.LISTS, where, whereArgs);
 	            break;
 	        case LISTS_ID:
 	            String listId = uri.getPathSegments().get(1);
-	            count = db.delete(MyDatabase.Tables.LISTS,
-	            		ShoppingOrganiserContract.Lists._ID + "=" + listId +
+	            count = db.delete(ShoppingDatabase.Tables.LISTS,
+	            		ShoppingContract.Lists._ID + "=" + listId +
 	            		(!TextUtils.isEmpty(where) ? " AND (" + where + ')' : ""), whereArgs);
 	            break;
 	        default:
@@ -222,23 +249,42 @@ public class MyProvider extends ContentProvider {
     public int update(Uri uri, ContentValues values, String where, String[] whereArgs) {
         SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         int count;
+        Uri extraUriToNotify = null;
         switch (sUriMatcher.match(uri)) {
 	        case ITEMS:
-	            count = db.update(MyDatabase.Tables.ITEMS, values, where, whereArgs);
+	        	Log.i("NADIA","Provider Update on ShoppingDatabase.Tables.ITEMS SET:"+values+" WHERE:"+where+" wA:"+Arrays.toString(whereArgs));
+	            count = db.update(ShoppingDatabase.Tables.ITEMS, values, where, whereArgs);
 	            break;
+	        case ITEMS_MOVE:
+	        	Log.i("NADIA","ITEMS_MOVE");
+	        	String id = uri.getPathSegments().get(1);
+	        	String from = uri.getPathSegments().get(2);
+	        	String to = uri.getPathSegments().get(3);
+	        	db.beginTransaction();
+	        	count = arrangeItemsForMove(db, from,to);
+	    		String moveItemSelection = ShoppingContract.Items._ID + "= ?";
+	    		String[] moveItemSelectionValue = new String[]{String.valueOf(id)};
+	    		ContentValues newValue = new ContentValues();
+	    		newValue.put(ShoppingContract.Items.ITEM_TMP_POSITION, to);
+	    		Log.i("NADIA","ITEMS_MOVE MOVE: id"+id+" to "+to);
+	    		count += db.update(ShoppingDatabase.Tables.ITEMS, newValue, moveItemSelection, moveItemSelectionValue);
+	        	db.setTransactionSuccessful();
+	        	db.endTransaction();
+	        	extraUriToNotify = ShoppingContract.Items.buildItemsUri();
+	        	break;
 	        case ITEMS_ID:
 	            String itemId = uri.getPathSegments().get(1);
-	            count = db.update(MyDatabase.Tables.ITEMS, values,
-	            		ShoppingOrganiserContract.Items._ID + "=" + itemId +
+	            count = db.update(ShoppingDatabase.Tables.ITEMS, values,
+	            		ShoppingContract.Items._ID + "=" + itemId +
 	            		(!TextUtils.isEmpty(where) ? " AND (" + where + ')' : ""), whereArgs);
 	            break;
 	        case LISTS:
-	            count = db.update(MyDatabase.Tables.LISTS, values, where, whereArgs);
+	            count = db.update(ShoppingDatabase.Tables.LISTS, values, where, whereArgs);
 	            break;
 	        case LISTS_ID:
 	            String listId = uri.getPathSegments().get(1);
-	            count = db.update(MyDatabase.Tables.LISTS, values,
-	            		ShoppingOrganiserContract.Lists._ID + "=" + listId +
+	            count = db.update(ShoppingDatabase.Tables.LISTS, values,
+	            		ShoppingContract.Lists._ID + "=" + listId +
 	            		(!TextUtils.isEmpty(where) ? " AND (" + where + ')' : ""), whereArgs);
 	            break;
 	        default:
@@ -246,6 +292,61 @@ public class MyProvider extends ContentProvider {
         }
 
         getContext().getContentResolver().notifyChange(uri, null);
+        if ( extraUriToNotify != null ){
+        	getContext().getContentResolver().notifyChange(extraUriToNotify, null);
+        }
         return count;
     }
+
+	private int arrangeItemsForMove(SQLiteDatabase db, String sFrom, String sTo) {
+		int from = Integer.parseInt(sFrom);
+		int to = Integer.parseInt(sTo);
+		if ( from == to ){
+			return 0;
+		}
+		String selection;
+		String newValue;
+		if ( from > to ) {
+			selection = ShoppingContract.Items.ITEM_TMP_POSITION + "< "+from+" AND "+
+				ShoppingContract.Items.ITEM_TMP_POSITION + ">= "+to;
+			newValue = ShoppingContract.Items.ITEM_TMP_POSITION +"+ 1";
+		} else { // if ( from < to )
+			selection = ShoppingContract.Items.ITEM_TMP_POSITION + "> "+from+" AND "+
+				ShoppingContract.Items.ITEM_TMP_POSITION + "<= "+to;
+			newValue = ShoppingContract.Items.ITEM_TMP_POSITION +"- 1";
+		}
+
+		StringBuilder sql = new StringBuilder(120);
+		sql.append("UPDATE ");
+        sql.append(ShoppingDatabase.Tables.ITEMS);
+        sql.append(" SET ");
+        sql.append(ShoppingContract.Items.ITEM_TMP_POSITION);
+        sql.append("="+newValue);
+        sql.append(" WHERE ");
+        sql.append(selection);
+
+        db.execSQL(sql.toString());
+
+        Log.i("NADIA","ITEMS_MOVE SQL: " + sql.toString());
+
+		return Math.abs(from - to);
+	}
+
+	private void arrangeItemsForDelete(SQLiteDatabase db, int pos) {
+		String selection = ShoppingContract.Items.ITEM_TMP_POSITION + "> "+pos;
+		String newValue = ShoppingContract.Items.ITEM_TMP_POSITION +"- 1";
+
+		StringBuilder sql = new StringBuilder(120);
+		sql.append("UPDATE ");
+        sql.append(ShoppingDatabase.Tables.ITEMS);
+        sql.append(" SET ");
+        sql.append(ShoppingContract.Items.ITEM_TMP_POSITION);
+        sql.append("="+newValue);
+        sql.append(" WHERE ");
+        sql.append(selection);
+
+        db.execSQL(sql.toString());
+        
+        Log.i("NADIA","ITEMS_DEL SQL: " + sql.toString());
+	}
 }

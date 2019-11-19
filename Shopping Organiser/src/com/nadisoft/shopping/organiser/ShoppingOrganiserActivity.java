@@ -6,17 +6,19 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.View.OnClickListener;
+import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
+import android.widget.SimpleCursorAdapter.ViewBinder;
 
 import com.actionbarsherlock.app.ActionBar;
-import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.app.SherlockListActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
-import com.nadisoft.shopping.organiser.provider.ShoppingOrganiserContract;
+import com.nadisoft.shopping.organiser.provider.ShoppingContract;
 
-public class ShoppingOrganiserActivity extends SherlockActivity implements ActionBar.OnNavigationListener {
+public class ShoppingOrganiserActivity extends SherlockListActivity implements ActionBar.OnNavigationListener {
     //private TextView mSelected;
 
     @Override
@@ -25,13 +27,32 @@ public class ShoppingOrganiserActivity extends SherlockActivity implements Actio
         setContentView(R.layout.main);
         Context context = getSupportActionBar().getThemedContext();
 
+        setUpActionBar();
+        setUpList();
+    }
+
+    private void setUpList() {
+        ListView lv = getListView();
+        lv.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+		
 		@SuppressWarnings("deprecation")
-		Cursor cursor = managedQuery(ShoppingOrganiserContract.Lists.buildListsUri(), 
+		Cursor cursor = managedQuery(ShoppingContract.Items.buildItemsUri(), 
+				null, null, null, null);
+		SimpleCursorAdapter itemsAdapter = new SimpleCursorAdapter(this,
+				R.layout.item, cursor,
+				new String[] { ShoppingContract.Items.ITEM_NAME },
+				new int[] { R.id.itemText });
+		setListAdapter(itemsAdapter);
+	}
+
+	private void setUpActionBar() {
+		@SuppressWarnings("deprecation")
+		Cursor cursor = managedQuery(ShoppingContract.Lists.buildListsUri(), 
 				null, null, null, null);
 		@SuppressWarnings("deprecation")
 		SimpleCursorAdapter navListAdapter = new SimpleCursorAdapter(this,
 				R.layout.sherlock_spinner_item, cursor,
-				new String[] { ShoppingOrganiserContract.Lists.LIST_NAME },
+				new String[] { ShoppingContract.Lists.LIST_NAME },
 				new int[] { android.R.id.text1 }){
 
 			@Override
@@ -69,9 +90,9 @@ public class ShoppingOrganiserActivity extends SherlockActivity implements Actio
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         getSupportActionBar().setDisplayShowHomeEnabled(false);
         getSupportActionBar().setListNavigationCallbacks(navListAdapter, this);
-    }
+	}
 
-    @Override
+	@Override
     public boolean onNavigationItemSelected(int itemPosition, long itemId) {
         //mSelected.setText("Selected: " + mLocations[itemPosition]);
         return true;
@@ -86,9 +107,18 @@ public class ShoppingOrganiserActivity extends SherlockActivity implements Actio
 
     @Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		if (R.id.menu_item_editLists == item.getItemId()) {
-			Intent intent = new Intent(this, EditListsActivity.class);
+    	Intent intent;
+    	switch (item.getItemId()) {
+		case R.id.menu_item_edit:
+			intent = new Intent(this, EditItemsActivity.class);
 			startActivity(intent);
+			break;
+		case R.id.menu_item_editLists:
+			intent = new Intent(this, EditListsActivity.class);
+			startActivity(intent);
+			break;
+		default:
+			break;
 		}
 		return super.onOptionsItemSelected(item);
 	}

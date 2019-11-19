@@ -19,13 +19,17 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".EditItemsActivity"
+            android:label="@string/editingItemActivityLabel" >
+        </activity>
+        <activity
             android:name=".EditListsActivity"
             android:label="@string/editingListActivityLabel" >
         </activity>
 
         <provider
             android:authorities="com.nadisoft.shopping.organiser.provider"
-            android:name=".provider.MyProvider" />
+            android:name=".provider.ShoppingProvider" />
     </application>
 
 </manifest>

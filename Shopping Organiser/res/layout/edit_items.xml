@@ -1,32 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:padding="20dip">
     <LinearLayout
-		android:id="@+id/addListLine"
+		android:id="@+id/addItemLine"
 		android:layout_width="fill_parent"
 		android:layout_height="?android:attr/listPreferredItemHeight">
 		<EditText
-			android:id="@+id/newListNameEditText"  
+			android:id="@+id/newItemNameEditText"  
 		    android:layout_width="0dip" 
 		    android:layout_height="wrap_content"
 		    android:layout_weight="1"
-		    android:hint="@string/new_list"
+		    android:hint="@string/new_item"
+		    android:inputType="text"
 	    />
-	    <ImageButton android:id="@+id/addListButton" 
+	    <ImageButton android:id="@+id/addItemButton" 
 	            android:layout_width="wrap_content" 
 	            android:layout_height="wrap_content"
 	            android:src="@drawable/iconnew"
 	            android:contentDescription="@string/add_item" 
-	            android:onClick="addNewList"
+	            android:onClick="addNewItem"
 		/>
 	</LinearLayout>
-	<ListView
-		android:id="@id/android:list"
+
+	<com.commonsware.cwac.tlv.TouchListView
+		xmlns:tlv="http://schemas.android.com/apk/res/com.nadisoft.shopping.organiser"
+	
+		android:id="@android:id/list"
 		android:layout_width="fill_parent"
 		android:layout_height="fill_parent"
-		android:layout_below="@id/addListLine"
+		android:layout_below="@id/addItemLine"
+		android:drawSelectorOnTop="false"
+		tlv:normal_height="64dip"
+	    tlv:expanded_height="128dip"
+	    tlv:dragndrop_background="#7F33b5e5"
+		tlv:grabber="@+id/icon"
+		tlv:remove_mode="slideLeft"
 	/>
 </RelativeLayout>

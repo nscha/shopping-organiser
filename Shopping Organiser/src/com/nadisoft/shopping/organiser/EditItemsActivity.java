@@ -1,0 +1,258 @@
+package com.nadisoft.shopping.organiser;
+
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.content.DialogInterface;
+import android.database.Cursor;
+import android.graphics.Color;
+import android.net.Uri;
+import android.os.Bundle;
+import android.text.InputType;
+import android.util.Log;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.SimpleCursorAdapter;
+import android.widget.SimpleCursorAdapter.ViewBinder;
+
+import com.actionbarsherlock.app.SherlockListActivity;
+import com.commonsware.cwac.tlv.TouchListView;
+import com.nadisoft.shopping.organiser.entities.ShoppingItem;
+import com.nadisoft.shopping.organiser.provider.ShoppingContract;
+
+public class EditItemsActivity extends SherlockListActivity{
+	private EditText newItemNameEditText;
+	private EditText editItemNameEditText;
+	private ShoppingItem itemOnEdition;
+	private SimpleCursorAdapter listAdapter;
+
+	static final int DIALOG_EDIT_ITEM_NAME = 0;
+	static final int DIALOG_CONFIRM_ITEM_DELETE = 1;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.edit_items);
+
+        newItemNameEditText = (EditText) findViewById(R.id.newItemNameEditText);
+        TouchListView tlv=(TouchListView)getListView();
+		
+        @SuppressWarnings("deprecation")
+    	Cursor cursor = managedQuery(ShoppingContract.Items.buildItemsUri(), 
+				null, null, null, null);
+
+        @SuppressWarnings("deprecation")
+		SimpleCursorAdapter adapter = new SimpleCursorAdapter(this,
+				R.layout.edit_item, cursor,
+				new String[] { ShoppingContract.Items._ID,
+				ShoppingContract.Items.ITEM_NAME },
+				new int[] { R.id.editItemButton,
+				R.id.itemText });
+
+        listAdapter = adapter;
+		listAdapter.setViewBinder(new ViewBinder(){
+			@Override
+			public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
+				switch (view.getId()) {
+				case R.id.editItemButton:
+					view.setTag(cursor.getLong(columnIndex));
+					view.setOnClickListener(new OnClickListener() {
+						@Override
+						public void onClick(View v) {
+							long id = (Long)v.getTag();
+							EditItemsActivity.this.startEditingItem(id);
+						}
+					});
+					return true;
+				}
+				return false;
+			}
+		});
+		setListAdapter(listAdapter);
+
+		tlv.setDropListener(onDrop);
+		tlv.setRemoveListener(onRemove);
+    }
+
+	private TouchListView.DropListener onDrop=new TouchListView.DropListener() {
+		@Override
+		public void drop(int from, int to) {
+			Cursor cursor=(Cursor)listAdapter.getItem(from);
+			int idIdx = cursor.getColumnIndex(ShoppingContract.Items._ID);
+			int nameIdx = cursor.getColumnIndex(ShoppingContract.Items.ITEM_NAME);
+			int posIdx = cursor.getColumnIndex(ShoppingContract.Items.ITEM_TMP_POSITION);
+			
+			Log.i("NADIA", "grabbed item id " + cursor.getLong(idIdx) + " name: " + cursor.getString(nameIdx)
+					+ " from " + from + " to " + to + " (pos "+cursor.getInt(posIdx)+")");
+			moveItem(cursor.getLong(idIdx), from,to);
+		}
+	};
+
+	private TouchListView.RemoveListener onRemove=new TouchListView.RemoveListener() {
+		@Override
+		public void remove(int which) {
+				Cursor cursor=(Cursor)listAdapter.getItem(which);
+				int idIdx = cursor.getColumnIndex(ShoppingContract.Items._ID);
+				startDeletingItem(cursor.getLong(idIdx));
+		}
+	};
+
+	@Override
+	protected Dialog onCreateDialog(int id) {
+        Dialog dialog;
+        switch(id) {
+        case DIALOG_EDIT_ITEM_NAME:
+            dialog = createEditItemNameDialog();
+            break;
+        case DIALOG_CONFIRM_ITEM_DELETE:
+        	dialog = createConfirmDeleteItemDialog();
+        	break;
+        default:
+            dialog = null;
+        }
+        return dialog;
+    }
+
+	@Override
+	protected void onPrepareDialog(int id, Dialog dialog) {
+		switch(id) {
+        case DIALOG_EDIT_ITEM_NAME:
+            dialog = prepareEditItemNameDialog(dialog);
+            break;
+        case DIALOG_CONFIRM_ITEM_DELETE:
+        	break;
+        default:
+            dialog = null;
+        }
+	}
+
+	private Dialog createEditItemNameDialog(){
+		editItemNameEditText = new EditText(this);
+		editItemNameEditText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_NORMAL);
+		editItemNameEditText.setTextColor(Color.WHITE);
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setMessage(R.string.item_name_prompt)
+	    	.setView(editItemNameEditText)
+	    	.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+	    		@Override
+				public void onClick(DialogInterface dialog, int whichButton) {
+	    			String newName = editItemNameEditText.getText().toString();
+	    			endEditingItem(newName.trim());
+	    		}
+	    	}).setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+	    		@Override
+				public void onClick(DialogInterface dialog, int whichButton) {
+	    			itemOnEdition = null;
+	    		}
+	    	});
+		
+		return builder.show();
+	}
+
+	private Dialog prepareEditItemNameDialog(Dialog dialog) {
+		editItemNameEditText.setText(itemOnEdition.getName());
+		return dialog;
+	}
+
+	private Dialog createConfirmDeleteItemDialog(){
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setMessage(R.string.item_del_prompt)
+	    	.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+	    		@Override
+				public void onClick(DialogInterface dialog, int whichButton) {
+	    			endDeletingItem(true);
+	    		}
+
+	    	}).setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+	    		@Override
+				public void onClick(DialogInterface dialog, int whichButton) {
+	    			endDeletingItem(false);
+	    		}
+	    	});
+
+		return builder.create();
+	}
+
+	public void addNewItem(View view) {
+		String name = newItemNameEditText.getText().toString();
+    	if ( name.length() > 0 ) {
+    		createItem(name);
+			newItemNameEditText.setText("");
+    	}
+    }
+
+    @SuppressWarnings("deprecation")
+	private void startEditingItem(long id) {
+		itemOnEdition = getShoppingItem(id);
+		showDialog(DIALOG_EDIT_ITEM_NAME);
+	}
+
+    private void endEditingItem(String newName) {
+    	long id = itemOnEdition.getId();
+    	String oldName = itemOnEdition.getName();
+    	itemOnEdition = null;
+		editItem(id, oldName, newName);
+	}
+
+    @SuppressWarnings("deprecation")
+	private void startDeletingItem(long id) {
+		itemOnEdition = getShoppingItem(id);
+		showDialog(DIALOG_CONFIRM_ITEM_DELETE);
+	}
+
+    private void endDeletingItem(boolean confirm) {
+    	long id = itemOnEdition.getId();
+    	if ( confirm ){
+    		deleteItem(id);
+    	}
+    	itemOnEdition = null;
+	}
+
+	private ShoppingItem getShoppingItem(long id) {
+		ContentResolver contentResolver = getContentResolver();
+		Uri uri = ShoppingContract.Items.buildItemUri(id);
+		Cursor cursor = contentResolver.query(uri, null, null, null, null);
+		cursor.moveToFirst();
+		String name = cursor.getString(cursor.getColumnIndex(ShoppingContract.Items.ITEM_NAME));
+		ShoppingItem shoppingItem = new ShoppingItem(name);
+		shoppingItem.setId(id);
+		return shoppingItem;
+	}
+
+	private void createItem(String name) {
+		ContentResolver contentResolver = getContentResolver();
+		Uri url = ShoppingContract.Items.buildItemsUri();
+		ContentValues values = new ContentValues();
+		values.put(ShoppingContract.Items.ITEM_NAME, name);
+		values.put(ShoppingContract.Items.ITEM_NEEDED, false);
+		values.put(ShoppingContract.Items.ITEM_BOUGHT, false);
+		contentResolver.insert(url, values);
+	}
+
+	private void editItem(long id, String oldName, String newName)
+	{
+		ContentResolver contentResolver = getContentResolver();
+		Uri url = ShoppingContract.Items.buildItemUri(id);
+		ContentValues values = new ContentValues();
+		if ( !oldName.equals(newName.trim()) ) {
+			values.put(ShoppingContract.Items.ITEM_NAME, newName);
+			contentResolver.update(url, values, null, null);
+		}
+	}
+
+	private void moveItem(long id, int from, int to) {
+		ContentResolver contentResolver = getContentResolver();
+		Uri uri = ShoppingContract.Items.buildMoveItemUri(id, from, to);
+		contentResolver.update(uri, null, null, null);
+	}
+
+	private void deleteItem(long id)
+	{
+		ContentResolver contentResolver = getContentResolver();
+		Uri url = ShoppingContract.Items.buildItemUri(id);
+		contentResolver.delete(url, null, null);
+	}
+}

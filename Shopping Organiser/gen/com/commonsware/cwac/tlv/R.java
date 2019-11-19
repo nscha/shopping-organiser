@@ -881,15 +881,16 @@ containing a value of this type.
         public static final int edit=0x7f020085;
         public static final int edit_text_holo_light=0x7f020086;
         public static final int editlists=0x7f020087;
-        public static final int help=0x7f020088;
-        public static final int ic_launcher=0x7f020089;
-        public static final int iconnew=0x7f02008a;
-        public static final int remove=0x7f02008b;
-        public static final int textfield_activated_holo_light=0x7f02008c;
-        public static final int textfield_default_holo_light=0x7f02008d;
-        public static final int textfield_disabled_focused_holo_light=0x7f02008e;
-        public static final int textfield_disabled_holo_light=0x7f02008f;
-        public static final int textfield_focused_holo_light=0x7f020090;
+        public static final int grabber=0x7f020088;
+        public static final int help=0x7f020089;
+        public static final int ic_launcher=0x7f02008a;
+        public static final int iconnew=0x7f02008b;
+        public static final int remove=0x7f02008c;
+        public static final int textfield_activated_holo_light=0x7f02008d;
+        public static final int textfield_default_holo_light=0x7f02008e;
+        public static final int textfield_disabled_focused_holo_light=0x7f02008f;
+        public static final int textfield_disabled_holo_light=0x7f020090;
+        public static final int textfield_focused_holo_light=0x7f020091;
     }
     public static final class id {
         public static final int abs__action_bar=0x7f040027;
@@ -921,22 +922,28 @@ containing a value of this type.
         public static final int abs__title=0x7f040020;
         public static final int abs__titleDivider=0x7f040021;
         public static final int abs__up=0x7f04000b;
-        public static final int addListButton=0x7f040031;
-        public static final int addListLine=0x7f04002f;
+        public static final int addItemButton=0x7f040031;
+        public static final int addItemLine=0x7f04002f;
+        public static final int addListButton=0x7f040034;
+        public static final int addListLine=0x7f040032;
         public static final int disableHome=0x7f040009;
-        public static final int editListButton=0x7f04002d;
+        public static final int editItemButton=0x7f04002d;
+        public static final int editListButton=0x7f040036;
         public static final int fling=0x7f040011;
         public static final int homeAsUp=0x7f040006;
-        public static final int listItemText=0x7f04002c;
+        public static final int icon=0x7f04002c;
+        public static final int itemText=0x7f04002e;
+        public static final int listItemText=0x7f040035;
         public static final int listMode=0x7f040002;
-        public static final int menu_item_edit=0x7f040033;
-        public static final int menu_item_editLists=0x7f040035;
-        public static final int menu_item_help=0x7f040036;
-        public static final int menu_item_restart=0x7f040034;
-        public static final int newListNameEditText=0x7f040030;
+        public static final int menu_item_edit=0x7f040038;
+        public static final int menu_item_editLists=0x7f04003a;
+        public static final int menu_item_help=0x7f04003b;
+        public static final int menu_item_restart=0x7f040039;
+        public static final int newItemNameEditText=0x7f040030;
+        public static final int newListNameEditText=0x7f040033;
         public static final int none=0x7f040010;
         public static final int normal=0x7f040001;
-        public static final int removeListButton=0x7f04002e;
+        public static final int removeListButton=0x7f040037;
         public static final int showCustom=0x7f040008;
         public static final int showHome=0x7f040005;
         public static final int showTitle=0x7f040007;
@@ -944,7 +951,6 @@ containing a value of this type.
         public static final int slideLeft=0x7f040014;
         public static final int slideRight=0x7f040013;
         public static final int tabMode=0x7f040003;
-        public static final int text=0x7f040032;
         public static final int useLogo=0x7f040004;
         public static final int wrap_content=0x7f040000;
     }
@@ -972,12 +978,14 @@ containing a value of this type.
         public static final int abs__screen_action_bar_overlay=0x7f030011;
         public static final int abs__screen_simple=0x7f030012;
         public static final int abs__screen_simple_overlay_action_mode=0x7f030013;
-        public static final int list_item=0x7f030014;
-        public static final int list_item_back=0x7f030015;
-        public static final int lists=0x7f030016;
-        public static final int main=0x7f030017;
-        public static final int sherlock_spinner_dropdown_item=0x7f030018;
-        public static final int sherlock_spinner_item=0x7f030019;
+        public static final int edit_item=0x7f030014;
+        public static final int edit_items=0x7f030015;
+        public static final int edit_lists=0x7f030016;
+        public static final int item=0x7f030017;
+        public static final int list_item=0x7f030018;
+        public static final int main=0x7f030019;
+        public static final int sherlock_spinner_dropdown_item=0x7f03001a;
+        public static final int sherlock_spinner_item=0x7f03001b;
     }
     public static final class menu {
         public static final int menu=0x7f0b0000;
@@ -1013,16 +1021,22 @@ containing a value of this type.
         /**  Description of a share target (both in the list of such or the default share button) in a ShareActionProvider (share UI). [CHAR LIMIT=NONE] 
          */
         public static final int abs__shareactionprovider_share_with_application=0x7f090009;
-        public static final int add_item=0x7f09000e;
+        public static final int add_item=0x7f090010;
         public static final int app_name=0x7f09000b;
-        public static final int cancel=0x7f090013;
-        public static final int edit=0x7f090010;
-        public static final int editingListActivityLabel=0x7f09000c;
+        public static final int cancel=0x7f090019;
+        public static final int edit=0x7f090012;
+        public static final int editingItemActivityLabel=0x7f09000c;
+        public static final int editingListActivityLabel=0x7f09000d;
         public static final int hello=0x7f09000a;
-        public static final int list_name_prompt=0x7f090011;
-        public static final int new_list=0x7f09000d;
-        public static final int ok=0x7f090012;
-        public static final int remove_item=0x7f09000f;
+        public static final int item_del_prompt=0x7f090016;
+        public static final int item_name_prompt=0x7f090014;
+        public static final int list_del_prompt=0x7f090015;
+        public static final int list_name_prompt=0x7f090013;
+        public static final int new_item=0x7f09000f;
+        public static final int new_list=0x7f09000e;
+        public static final int ok=0x7f090017;
+        public static final int remove_item=0x7f090011;
+        public static final int yes=0x7f090018;
     }
     public static final class style {
         public static final int AlertDialogHoloDark=0x7f0a005b;

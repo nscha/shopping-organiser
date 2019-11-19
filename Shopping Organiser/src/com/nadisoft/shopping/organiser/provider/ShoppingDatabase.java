@@ -6,11 +6,11 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
 
-import com.nadisoft.shopping.organiser.provider.ShoppingOrganiserContract.ItemColumns;
-import com.nadisoft.shopping.organiser.provider.ShoppingOrganiserContract.ListColumns;
+import com.nadisoft.shopping.organiser.provider.ShoppingContract.ItemColumns;
+import com.nadisoft.shopping.organiser.provider.ShoppingContract.ListColumns;
 //import com.nadisoft.shopping.organiser.provider.ShoppingOrganiserContract.OrderingColumns;
 
-public class MyDatabase extends SQLiteOpenHelper {
+public class ShoppingDatabase extends SQLiteOpenHelper {
 	/** Database Name */
 	private static final String DATABASE_NAME = "shoppingOrganiser.db";
 	/** Database version */
@@ -23,7 +23,7 @@ public class MyDatabase extends SQLiteOpenHelper {
 		String ORDERINGS = "orderings";
 	}
 
-	public MyDatabase(Context context) {
+	public ShoppingDatabase(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
 	}
 
@@ -35,6 +35,7 @@ public class MyDatabase extends SQLiteOpenHelper {
 				+ ItemColumns.ITEM_NAME + " TEXT NOT NULL,"
 				+ ItemColumns.ITEM_NEEDED + " BOOLEAN NOT NULL,"
 				+ ItemColumns.ITEM_BOUGHT + " BOOLEAN NOT NULL,"
+				+ ItemColumns.ITEM_TMP_POSITION + " INT NOT NULL," //DELME
 				+ "UNIQUE (" + BaseColumns._ID + ") ON CONFLICT REPLACE)");
 
 		db.execSQL("CREATE TABLE " + Tables.LISTS + " (" 
