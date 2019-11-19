@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <lint>
+    <issue id="AlwaysShowAction">
+        <ignore path="res\menu\edit_menu.xml" />
+    </issue>
+    <issue id="ContentDescription">
+        <ignore path="res\layout\alert_dialog_title.xml" />
+        <ignore path="res\layout\help_dialog_title.xml" />
+    </issue>
     <issue id="IconExpectedSize" severity="informational" />
-    <issue id="UnusedIds" severity="warning">
-        <ignore path="res\layout\edit_item.xml" />
+    <issue id="UseCompoundDrawables">
+        <ignore path="res\layout\alert_dialog_title.xml" />
     </issue>
 </lint>

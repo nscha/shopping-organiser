@@ -11,43 +11,39 @@
 		android:paddingRight="6dip" >
 
 	    <TextView
-		    android:id="@+id/help_introduction"
 		    android:layout_width="wrap_content"
 		    android:layout_height="wrap_content"
-		    android:text="@string/shopping_help_introduction" />
+		    android:text="@string/edit_lists_help_introduction" />
 
 	    <TextView
-		    android:id="@+id/help_quick_reference_title"
 		    android:layout_width="wrap_content"
 		    android:layout_height="wrap_content"
-		    android:text="@string/shopping_help_quick_reference_title"
+		    android:text="@string/edit_lists_help_quick_reference_title"
 		    android:textStyle="bold" />
 
 	    <TextView
-		    android:id="@+id/help_quick_reference_help_menu"
 		    android:layout_width="wrap_content"
 		    android:layout_height="wrap_content"
 		    android:text="@string/help_menu_help"
 		    android:drawableLeft="@drawable/help" />
 
 	    <TextView
-		    android:id="@+id/help_quick_reference_edit_list"
 		    android:layout_width="wrap_content"
 		    android:layout_height="wrap_content"
-		    android:text="@string/shopping_help_quick_reference_menu_edit_list"
-		    android:drawableLeft="@drawable/edit" />
-
-    	<TextView
-		    android:id="@+id/help_quick_reference_edit_lists"
-		    android:layout_width="wrap_content"
-		    android:layout_height="wrap_content"
-		    android:text="@string/shopping_help_quick_reference_menu_edit_lists"
-		    android:drawableLeft="@drawable/editlists" />
+		    android:text="@string/edit_lists_help_quick_reference_menu_done"
+		    android:drawableLeft="@drawable/accept" />
 
 	    <TextView
 		    android:layout_width="wrap_content"
 		    android:layout_height="wrap_content"
-		    android:text="@string/shopping_help_quick_reference_menu_restart"
-		    android:drawableLeft="@drawable/restart" />
+		    android:text="@string/edit_lists_help_quick_reference_add_list"
+		    android:drawableLeft="@drawable/iconnew" />
+
+    	<TextView
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:text="@string/edit_lists_help_quick_reference_edit"
+		    android:drawableLeft="@drawable/edit" />
+
 	</LinearLayout>
 </ScrollView>

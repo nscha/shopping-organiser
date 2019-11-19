@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-
+<!-- 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
@@ -14,11 +14,11 @@
 			android:id="@+id/dialog_title"
 			android:layout_width="0dp"
 			android:layout_height="wrap_content"
-			android:textColor="#FFFFFF"
 			android:textSize="15sp"
 			android:layout_gravity="center"
 			android:gravity="center"
-			android:layout_weight="1" />
+			android:layout_weight="1" 
+			android:text="@string/first_time_help_title"/>
 		<ImageButton android:id="@+id/close_button"
 		    android:layout_width="30dip"
 		    android:layout_height="30dip"
@@ -27,8 +27,8 @@
 		    android:src="@drawable/remove"
 		    style="@style/ButtonHoloLight" />
 	</LinearLayout>
-
-    <ScrollView
+-->
+    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android" 
 	    android:layout_width="fill_parent"
 	    android:layout_height="wrap_content"
 	    android:layout_marginBottom="5dip" >
@@ -43,29 +43,36 @@
 		    <TextView
 			    android:id="@+id/help_introduction"
 			    android:layout_width="wrap_content"
-			    android:layout_height="wrap_content" />
+			    android:layout_height="wrap_content" 
+			    android:text="@string/first_time_help_introduction"/>
 
 		    <TextView
-			    android:id="@+id/help_normal_use_title"
 			    android:layout_width="wrap_content"
 			    android:layout_height="wrap_content"
-			    android:textStyle="bold" />
+			    android:textStyle="bold" 
+			    android:text="@string/first_time_help_normal_use_title"/>
 		    <TextView
-			    android:id="@+id/help_normal_use"
 			    android:layout_width="wrap_content"
-			    android:layout_height="wrap_content" />
+			    android:layout_height="wrap_content"
+			    android:text="@string/first_time_help_normal_use" />
 	
 			<TextView
-			    android:id="@+id/help_setup_title"
 			    android:layout_width="wrap_content"
 			    android:layout_height="wrap_content"
-			    android:textStyle="bold" />
+			    android:textStyle="bold" 
+			    android:text="@string/first_time_help_setup_title" />
 		    <TextView
-			    android:id="@+id/help_setup"
 			    android:layout_width="wrap_content"
-			    android:layout_height="wrap_content" />
+			    android:layout_height="wrap_content" 
+			    android:text="@string/first_time_help_setup" />
 
+		    <CheckBox android:id="@+id/help_never_show_again"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:text="@string/first_time_help_never_show_again"
+		        />
 		</LinearLayout>
 	</ScrollView>
-
+<!-- 
 </LinearLayout>
+ -->

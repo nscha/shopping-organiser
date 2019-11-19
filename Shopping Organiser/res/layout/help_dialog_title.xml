@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    >
+	<LinearLayout
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:orientation="horizontal"
+	    android:layout_margin="5dp">
+		<TextView
+			android:id="@+id/alertTitle"
+			android:layout_width="0dp"
+			android:layout_height="wrap_content"
+			android:textSize="15sp"
+			android:layout_gravity="center"
+			android:gravity="center"
+			android:layout_weight="1" />
+		<ImageButton android:id="@+id/close_button"
+		    android:layout_width="30dip"
+		    android:layout_height="30dip"
+		    android:scaleType="centerCrop"
+		    android:layout_gravity="top|right"
+		    android:src="@drawable/remove"
+		    style="@style/ButtonHoloLight" />
+	</LinearLayout>
+	<ImageView android:id="@+id/titleDivider"
+		android:layout_width="fill_parent"
+		android:layout_height="1dip"
+		android:scaleType="fitXY"
+		android:gravity="fill_horizontal"
+		android:src="@drawable/dialog_divider_horizontal_holo_light" />
+		<!-- android:src="@drawable/divider_horizontal_bright" -->
+</LinearLayout>

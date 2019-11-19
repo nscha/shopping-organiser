@@ -196,7 +196,14 @@ public class ShoppingDatabase extends SQLiteOpenHelper {
 		insertHCItem(db,"Talitas",1,63,2,93);
 		insertHCItem(db,"Tholem",1,33,2,80);
 		insertHCItem(db,"Toallitas diarias",1,0,2,47);
-		insertHCItem(db,"Toallitas nocturnas",1,2,2,49);	}
+		insertHCItem(db,"Toallitas nocturnas",1,2,2,49);
+		insertHCItem(db,"Toallitas normales",1,1,2,48);
+		insertHCItem(db,"Tomate",1,40,2,59);
+		insertHCItem(db,"Tomate en lata",1,53,2,13);
+		insertHCItem(db,"Vainillas",1,65,2,95);
+		insertHCItem(db,"Yoghurt",1,31,2,77);
+		insertHCItem(db,"Zucaritas",1,69,2,26);
+	}
 
 	protected void insertHCItem(SQLiteDatabase db, String name, long listId1, int pos1, long listId2, int pos2) {
 		ContentValues values = new ContentValues();

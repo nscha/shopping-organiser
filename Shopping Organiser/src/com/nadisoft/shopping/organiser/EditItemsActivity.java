@@ -1,12 +1,10 @@
 package com.nadisoft.shopping.organiser;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.InputType;
@@ -20,6 +18,9 @@ import com.actionbarsherlock.app.SherlockListActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.commonsware.cwac.tlv.TouchListView;
+import com.nadisoft.app.CustomAlertDialogBuilder;
+import com.nadisoft.app.HelpDialogBuilder;
+import com.nadisoft.app.HelpDialogBuilder.HelpType;
 import com.nadisoft.shopping.organiser.entities.ShoppingItem;
 import com.nadisoft.shopping.organiser.entities.ShoppingList;
 import com.nadisoft.shopping.organiser.provider.ShoppingContract;
@@ -31,8 +32,9 @@ public class EditItemsActivity extends SherlockListActivity{
 	private EditText editItemNameEditText;
 	private ShoppingItem itemOnEdition;
 
-	static final int DIALOG_EDIT_ITEM_NAME = 0;
-	static final int DIALOG_CONFIRM_ITEM_DELETE = 1;
+	private static final int DIALOG_EDIT_ITEMS_HELP = 0;
+	private static final int DIALOG_EDIT_ITEM_NAME = 1;
+	private static final int DIALOG_CONFIRM_ITEM_DELETE = 2;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,7 +44,12 @@ public class EditItemsActivity extends SherlockListActivity{
         getSupportActionBar().setSubtitle(getShoppingList(listId).getName());
 
         newItemNameEditText = (EditText) findViewById(R.id.newItemNameEditText);
-        TouchListView tlv=(TouchListView)getListView();
+        setUpList(listId);
+        showFirstTimeHelp();
+    }
+
+	private void setUpList(long listId) {
+		TouchListView tlv=(TouchListView)getListView();
 
         @SuppressWarnings("deprecation")
     	Cursor cursor = managedQuery(ShoppingContract.Items.buildListItemsUri(listId), 
@@ -50,7 +57,7 @@ public class EditItemsActivity extends SherlockListActivity{
 
         @SuppressWarnings("deprecation")
 		SimpleCursorAdapter listAdapter = new SimpleCursorAdapter(this,
-				R.layout.edit_item, cursor,
+				R.layout.edit_items_item, cursor,
 				new String[] { ShoppingContract.Items._ID,
 				ShoppingContract.Items.ITEM_NAME },
 				new int[] { R.id.editItemButton,
@@ -78,7 +85,7 @@ public class EditItemsActivity extends SherlockListActivity{
 
 		tlv.setDropListener(onDrop);
 		tlv.setRemoveListener(onRemove);
-    }
+	}
 
 	private TouchListView.DropListener onDrop=new TouchListView.DropListener() {
 		@Override
@@ -104,10 +111,20 @@ public class EditItemsActivity extends SherlockListActivity{
 		}
 	};
 
+	@SuppressWarnings("deprecation")
+	private void showFirstTimeHelp() {
+		if ( HelpDialogBuilder.showAutoHelpDialog(this, HelpType.EDIT_ITEMS) ){
+			showDialog(DIALOG_EDIT_ITEMS_HELP);
+		}
+	}
+
 	@Override
 	protected Dialog onCreateDialog(int id) {
         Dialog dialog;
         switch(id) {
+        case DIALOG_EDIT_ITEMS_HELP:
+        	dialog = createEditItemsHelpDialog();
+        	break;
         case DIALOG_EDIT_ITEM_NAME:
             dialog = createEditItemNameDialog();
             break;
@@ -123,6 +140,8 @@ public class EditItemsActivity extends SherlockListActivity{
 	@Override
 	protected void onPrepareDialog(int id, Dialog dialog) {
 		switch(id) {
+		case DIALOG_EDIT_ITEMS_HELP:
+			break;
         case DIALOG_EDIT_ITEM_NAME:
             dialog = prepareEditItemNameDialog(dialog);
             break;
@@ -133,13 +152,17 @@ public class EditItemsActivity extends SherlockListActivity{
         }
 	}
 
+	private Dialog createEditItemsHelpDialog() {
+		HelpDialogBuilder builder = new HelpDialogBuilder(this, HelpDialogBuilder.HelpType.EDIT_ITEMS);
+		return builder.show();
+	}
+
 	private Dialog createEditItemNameDialog(){
 		editItemNameEditText = new EditText(this);
 		editItemNameEditText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_NORMAL);
-		editItemNameEditText.setTextColor(Color.WHITE);
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setMessage(R.string.item_name_prompt)
-	    	.setView(editItemNameEditText)
+		CustomAlertDialogBuilder builder = new CustomAlertDialogBuilder(this);
+		builder.setView(editItemNameEditText)
+			.setMessage(R.string.item_name_prompt)
 	    	.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
 	    		@Override
 				public void onClick(DialogInterface dialog, int whichButton) {
@@ -152,7 +175,6 @@ public class EditItemsActivity extends SherlockListActivity{
 	    			itemOnEdition = null;
 	    		}
 	    	});
-
 		return builder.show();
 	}
 
@@ -162,7 +184,7 @@ public class EditItemsActivity extends SherlockListActivity{
 	}
 
 	private Dialog createConfirmDeleteItemDialog(){
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		CustomAlertDialogBuilder builder = new CustomAlertDialogBuilder(this);
 		builder.setMessage(R.string.item_del_prompt)
 	    	.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
 	    		@Override
@@ -187,13 +209,15 @@ public class EditItemsActivity extends SherlockListActivity{
         return true;
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
     	switch (item.getItemId()) {
 		case R.id.menu_item_done:
 			finish();
 			break;
 		case R.id.menu_item_help:
+			showDialog(DIALOG_EDIT_ITEMS_HELP);
 			break;
 		default:
 			break;

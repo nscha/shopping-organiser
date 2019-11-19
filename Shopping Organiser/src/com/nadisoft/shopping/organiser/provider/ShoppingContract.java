@@ -22,7 +22,6 @@ public class ShoppingContract {
     private static final String PATH_LIST_ITEMS_3 = "from";
     private static final String PATH_LIST_ITEMS_4 = "to";
     private static final String PATH_LIST_ITEMS_5 = "move";
-    private static final String PATH_ORDERINGS = "orderings";
 
     interface MessageColumns {
 		String MESSAGE_TEXT = "message_text";
@@ -136,22 +135,6 @@ public class ShoppingContract {
         }
     }
 
-    /** chequear si se usa! */
     public static class Orderings implements OrderingColumns, BaseColumns {
-    	/** Orderings content Uri. */
-    	public static final Uri CONTENT_URI =
-                BASE_CONTENT_URI.buildUpon().appendPath(PATH_ORDERINGS).build();
-		/** Orderings content type */
-		public static final String CONTENT_TYPE = "vnd.android.cursor.dir/vnd.cursoandroid.orderings";
-		public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/vnd.cursoandroid.orderings";
-
-		/** Default projection */
-		public static final String[] DEFAULT_PROJECTION = new String[] {
-				ShoppingContract.Orderings._ID, ShoppingContract.Items.ITEM_NAME,
-				ShoppingContract.Items.ITEM_NEEDED, ShoppingContract.Items.ITEM_BOUGHT, 
-				ShoppingContract.Orderings.ORDERING_POSITION };
-        /** Default "ORDER BY" clause. */
-        public static final String DEFAULT_SORT = ORDERING_POSITION + " ASC";
-
     }
 }

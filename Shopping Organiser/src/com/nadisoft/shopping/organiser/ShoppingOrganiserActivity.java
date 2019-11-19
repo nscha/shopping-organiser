@@ -1,5 +1,6 @@
 package com.nadisoft.shopping.organiser;
 
+import android.app.Dialog;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
@@ -12,28 +13,60 @@ import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.SimpleCursorAdapter.ViewBinder;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockListActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
+import com.nadisoft.app.HelpDialogBuilder;
+import com.nadisoft.app.HelpDialogBuilder.HelpType;
 import com.nadisoft.shopping.organiser.entities.ShoppingItem;
 import com.nadisoft.shopping.organiser.provider.ShoppingContract;
 
 public class ShoppingOrganiserActivity extends SherlockListActivity implements ActionBar.OnNavigationListener, ViewBinder {
-    //private TextView mSelected;
 	SimpleCursorAdapter navListAdapter;
 	boolean currentListSetsFilter;
+
+	static final int DIALOG_HELP_FIRST_TIME = 0;
+	static final int DIALOG_SHOPPING_HELP = 1;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
+        setContentView(R.layout.shopping_list);
 
         currentListSetsFilter = true;
         setUpActionBar();
         setUpList();
+        showFirstTimeHelp();
     }
+
+	@Override
+	protected Dialog onCreateDialog(int id) {
+        Dialog dialog;
+        switch(id) {
+        case DIALOG_HELP_FIRST_TIME:
+            dialog = createHelpFirstTimeDialog();
+            break;
+        case DIALOG_SHOPPING_HELP:
+        	dialog = createShoppingHelpDialog();
+        	break;
+        default:
+            dialog = null;
+        }
+        return dialog;
+    }
+
+	private Dialog createHelpFirstTimeDialog() {
+		HelpDialogBuilder builder = new HelpDialogBuilder(this, HelpDialogBuilder.HelpType.FIRST_TIME);
+		return builder.show();
+	}
+
+	private Dialog createShoppingHelpDialog() {
+		HelpDialogBuilder builder = new HelpDialogBuilder(this, HelpDialogBuilder.HelpType.SHOPPING);
+		return builder.show();
+	}
 
 	private void setUpList() {
         long listId = getListId();
@@ -45,7 +78,7 @@ public class ShoppingOrganiserActivity extends SherlockListActivity implements A
 				null, getSelection(), null, null);
 		@SuppressWarnings("deprecation")
 		SimpleCursorAdapter itemsAdapter = new SimpleCursorAdapter(getSupportActionBar().getThemedContext(),
-				R.layout.checked_item, cursor,
+				R.layout.shopping_list_item, cursor,
 				new String[] { ShoppingContract.Items.ITEM_NAME },
 				new int[] { R.id.itemText });
 		itemsAdapter.setViewBinder(this);
@@ -57,6 +90,16 @@ public class ShoppingOrganiserActivity extends SherlockListActivity implements A
 			return null;
 		else
 			return ShoppingContract.Items.ITEM_NEEDED + "=1";
+	}
+
+	@SuppressWarnings("deprecation")
+	private void showFirstTimeHelp() {
+		if ( HelpDialogBuilder.showAutoHelpDialog(this, HelpType.SHOPPING) ){
+			showDialog(DIALOG_SHOPPING_HELP);
+		}
+		if ( HelpDialogBuilder.showAutoHelpDialog(this, HelpType.FIRST_TIME) ){
+			showDialog(DIALOG_HELP_FIRST_TIME);
+		}
 	}
 
 	@SuppressWarnings("deprecation")
@@ -89,9 +132,15 @@ public class ShoppingOrganiserActivity extends SherlockListActivity implements A
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
+		ListView listView = getListView();
 		long itemId = getListAdapter().getItemId(position);
-		boolean checked = getListView().isItemChecked(position);
+		boolean checked = listView.isItemChecked(position);
 		editItem(itemId,currentListSetsFilter,checked);
+		for (int i = 0; i < getListView().getCount(); i++){
+			if ( !listView.isItemChecked(i) )
+				return;
+		}
+		Toast.makeText(this, getString(R.string.info_all_items_bought), 2).show();
 	}
 
 	private void setUpActionBar() {
@@ -155,7 +204,8 @@ public class ShoppingOrganiserActivity extends SherlockListActivity implements A
         return true;
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
     	Intent intent;
     	switch (item.getItemId()) {
@@ -172,7 +222,7 @@ public class ShoppingOrganiserActivity extends SherlockListActivity implements A
 			restartShopping();
 			break;
 		case R.id.menu_item_help:
-			new HelpDialog(this, HelpDialog.HelpType.FIRST_TIME).show();
+			showDialog(DIALOG_SHOPPING_HELP);
 			break;
 		default:
 			break;
