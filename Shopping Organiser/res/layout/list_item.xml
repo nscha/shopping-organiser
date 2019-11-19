@@ -1,22 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="?android:attr/listPreferredItemHeight" >
-    
+    android:layout_height="64dip"
+    android:gravity="center_vertical">
+
 	<TextView
 	    android:id="@+id/listItemText"
 	    android:layout_width="0dip"
-	    android:layout_height="fill_parent"
+	    android:layout_height="wrap_content"
 	    android:textAppearance="?android:attr/textAppearanceLarge"
-	    android:gravity="center_vertical"
-	    android:layout_weight="1"
+	    android:ellipsize="marquee"
+        android:singleLine="true"
+        android:layout_weight="1"
     />
 
 	<ImageButton
 	    android:id="@+id/editListButton" 
-		android:layout_width="wrap_content" 
-		android:layout_height="wrap_content"
-		android:gravity="center_vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
 		android:src="@drawable/edit"
 		android:contentDescription="@string/edit"
 		/>

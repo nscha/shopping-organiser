@@ -6,15 +6,16 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.SimpleCursorAdapter.ViewBinder;
+import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockListActivity;
 import com.nadisoft.shopping.organiser.entities.ShoppingList;
@@ -125,6 +126,7 @@ public class EditListsActivity extends SherlockListActivity{
 
 	private Dialog createEditListNameDialog(){
 		editListNameEditText = new EditText(this);
+		editListNameEditText.setTextColor(Color.WHITE);
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setMessage(R.string.list_name_prompt)
 	    	.setView(editListNameEditText)

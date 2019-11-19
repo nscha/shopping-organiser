@@ -841,12 +841,55 @@ containing a value of this type.
         public static final int abs__tab_unselected_holo=0x7f02005d;
         public static final int abs__tab_unselected_pressed_holo=0x7f02005e;
         public static final int accept=0x7f02005f;
-        public static final int edit=0x7f020060;
-        public static final int editlists=0x7f020061;
-        public static final int help=0x7f020062;
-        public static final int ic_launcher=0x7f020063;
-        public static final int iconnew=0x7f020064;
-        public static final int remove=0x7f020065;
+        public static final int background_holo_light=0x7f020060;
+        public static final int btn_check_off_disabled_focused_holo_light=0x7f020061;
+        public static final int btn_check_off_disabled_holo_light=0x7f020062;
+        public static final int btn_check_off_focused_holo_light=0x7f020063;
+        public static final int btn_check_off_holo_light=0x7f020064;
+        public static final int btn_check_off_pressed_holo_light=0x7f020065;
+        public static final int btn_check_on_disabled_focused_holo_light=0x7f020066;
+        public static final int btn_check_on_disabled_holo_light=0x7f020067;
+        public static final int btn_check_on_focused_holo_light=0x7f020068;
+        public static final int btn_check_on_holo_light=0x7f020069;
+        public static final int btn_check_on_pressed_holo_light=0x7f02006a;
+        public static final int btn_checkbox_holo_light=0x7f02006b;
+        public static final int btn_default_disabled_focused_holo_light=0x7f02006c;
+        public static final int btn_default_disabled_holo_light=0x7f02006d;
+        public static final int btn_default_focused_holo_light=0x7f02006e;
+        public static final int btn_default_holo_light=0x7f02006f;
+        public static final int btn_default_normal_holo_light=0x7f020070;
+        public static final int btn_default_pressed_holo_light=0x7f020071;
+        public static final int btn_radio_holo_light=0x7f020072;
+        public static final int btn_radio_off_disabled_focused_holo_light=0x7f020073;
+        public static final int btn_radio_off_disabled_holo_light=0x7f020074;
+        public static final int btn_radio_off_focused_holo_light=0x7f020075;
+        public static final int btn_radio_off_holo_light=0x7f020076;
+        public static final int btn_radio_off_pressed_holo_light=0x7f020077;
+        public static final int btn_radio_on_disabled_focused_holo_light=0x7f020078;
+        public static final int btn_radio_on_disabled_holo_light=0x7f020079;
+        public static final int btn_radio_on_focused_holo_light=0x7f02007a;
+        public static final int btn_radio_on_holo_light=0x7f02007b;
+        public static final int btn_radio_on_pressed_holo_light=0x7f02007c;
+        public static final int dialog_bottom_holo_dark=0x7f02007d;
+        public static final int dialog_bottom_holo_light=0x7f02007e;
+        public static final int dialog_full_holo_dark=0x7f02007f;
+        public static final int dialog_full_holo_light=0x7f020080;
+        public static final int dialog_middle_holo_dark=0x7f020081;
+        public static final int dialog_middle_holo_light=0x7f020082;
+        public static final int dialog_top_holo_dark=0x7f020083;
+        public static final int dialog_top_holo_light=0x7f020084;
+        public static final int edit=0x7f020085;
+        public static final int edit_text_holo_light=0x7f020086;
+        public static final int editlists=0x7f020087;
+        public static final int help=0x7f020088;
+        public static final int ic_launcher=0x7f020089;
+        public static final int iconnew=0x7f02008a;
+        public static final int remove=0x7f02008b;
+        public static final int textfield_activated_holo_light=0x7f02008c;
+        public static final int textfield_default_holo_light=0x7f02008d;
+        public static final int textfield_disabled_focused_holo_light=0x7f02008e;
+        public static final int textfield_disabled_holo_light=0x7f02008f;
+        public static final int textfield_focused_holo_light=0x7f020090;
     }
     public static final class id {
         public static final int abs__action_bar=0x7f040027;
@@ -930,10 +973,11 @@ containing a value of this type.
         public static final int abs__screen_simple=0x7f030012;
         public static final int abs__screen_simple_overlay_action_mode=0x7f030013;
         public static final int list_item=0x7f030014;
-        public static final int lists=0x7f030015;
-        public static final int main=0x7f030016;
-        public static final int sherlock_spinner_dropdown_item=0x7f030017;
-        public static final int sherlock_spinner_item=0x7f030018;
+        public static final int list_item_back=0x7f030015;
+        public static final int lists=0x7f030016;
+        public static final int main=0x7f030017;
+        public static final int sherlock_spinner_dropdown_item=0x7f030018;
+        public static final int sherlock_spinner_item=0x7f030019;
     }
     public static final class menu {
         public static final int menu=0x7f0b0000;
@@ -981,8 +1025,16 @@ containing a value of this type.
         public static final int remove_item=0x7f09000f;
     }
     public static final class style {
+        public static final int AlertDialogHoloDark=0x7f0a005b;
+        public static final int AlertDialogHoloLight=0x7f0a005a;
+        public static final int ButtonHoloLight=0x7f0a005c;
+        public static final int CheckBoxHoloLight=0x7f0a0060;
+        public static final int DialogHoloLight=0x7f0a005e;
         public static final int DialogWindowTitle_Sherlock=0x7f0a0033;
         public static final int DialogWindowTitle_Sherlock_Light=0x7f0a0034;
+        public static final int EditTextHoloLight=0x7f0a005d;
+        public static final int ListViewStyle=0x7f0a0059;
+        public static final int RadioHoloLight=0x7f0a005f;
         public static final int Sherlock___TextAppearance_Small=0x7f0a0047;
         public static final int Sherlock___Theme=0x7f0a004a;
         public static final int Sherlock___Theme_DarkActionBar=0x7f0a004c;
@@ -1014,6 +1066,7 @@ containing a value of this type.
         public static final int TextAppearance_Sherlock_Widget_PopupMenu_Large=0x7f0a003f;
         public static final int TextAppearance_Sherlock_Widget_PopupMenu_Small=0x7f0a0041;
         public static final int TextAppearance_Sherlock_Widget_TextView_SpinnerItem=0x7f0a0043;
+        public static final int Theme_HoloEverywhereLight_Sherlock_ForceOverflow=0x7f0a0058;
         public static final int Theme_Sherlock=0x7f0a004e;
         public static final int Theme_Sherlock_Dialog=0x7f0a0056;
         public static final int Theme_Sherlock_ForceOverflow=0x7f0a0053;
