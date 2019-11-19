@@ -8,6 +8,7 @@ import edu.nadisoft.shopping.entities.ShoppingLists;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -15,14 +16,18 @@ import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
-public class OrderingListActivity extends MenuedListActivity {
+/**
+ * OrderingListActivity is the Activity used to allow reording of items in Shopping Lists
+ * @author Nadia
+ */
+public class OrderingListActivity extends MenuedShoppingListActivity {
 
 	/** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         String listName = getIntent().getStringExtra(EXTRA_LIST_NAME);
-        setShoppingList(ShoppingLists.getList(this, listName));
+        setShoppingList(ShoppingLists.getList(listName));
         setContentView(R.layout.ordering_list);
 		setListAdapter(new ShoppingItemArrayAdapter(this, R.layout.ordering_list_item, R.id.ordering_list_item_text, getShoppingList().getItems()));
 		
@@ -33,9 +38,48 @@ public class OrderingListActivity extends MenuedListActivity {
     }
 
 	@Override
+	protected void onDestroy() {
+		Log.i(this.getClass().getSimpleName(), "onDestroy");
+		super.onDestroy();
+	}
+
+	@Override
+	protected void onRestart() {
+		Log.i(this.getClass().getSimpleName(), "onRestart");
+		super.onRestart();
+	}
+
+	@Override
+	protected void onResume() {
+		Log.i(this.getClass().getSimpleName(), "onResume");
+		super.onResume();
+	}
+
+	@Override
+	protected void onStart() {
+		Log.i(this.getClass().getSimpleName(), "onStart");
+		super.onStart();
+	}
+
+	@Override
+	protected void onStop() {
+		Log.i(this.getClass().getSimpleName(), "onStop");
+		super.onStop();
+	}
+
+	@Override
 	protected void onPause() {
-		ShoppingLists.save(this);
+		Log.i(this.getClass().getSimpleName(), "onPause (saving!)");
+		ShoppingLists.save();
 		super.onPause();
+	}
+
+	@Override
+	public void onBackPressed() {
+		Log.i(this.getClass().getSimpleName(), "onBackPressed");
+		Log.i(this.getClass().getSimpleName(), "calling finish from onBackPressed");
+		finish();
+		super.onBackPressed();
 	}
 
 	@SuppressWarnings("unchecked") /** TODO MEJORAR */
@@ -47,8 +91,14 @@ public class OrderingListActivity extends MenuedListActivity {
 
 	    	ArrayAdapter<ShoppingItem> adapter = (ArrayAdapter<ShoppingItem>) lv.getAdapter();
 	    	ShoppingItem newItem = new ShoppingItem(text);
-	    	//adapter.add(newItem); // parece que no hace falta D:
-	    	ShoppingLists.addShoppingItem(this, newItem);
+	    	if ( getShoppingList().filterByNeed() ){
+	    		newItem.setNeeded(true);
+	    	}
+	    	
+	    	ShoppingLists.addShoppingItem(newItem);
+	    	if ( adapter.getPosition(newItem) < 0 ){
+	    		adapter.add(newItem); //The list the adapter has could be the same pointer or not
+	    	}
 	    	adapter.notifyDataSetChanged();
 	    	editText.setText("");
     	}
@@ -63,35 +113,23 @@ public class OrderingListActivity extends MenuedListActivity {
 	protected Integer getContextMenuLayout() {
 		return R.menu.context_menu;
 	}
-	
+
 	@SuppressWarnings("unchecked") /** TODO MEJORAR */
 	private void removeListItem(int position) {
 		ArrayAdapter<ShoppingItem> adapter = (ArrayAdapter<ShoppingItem>) getListAdapter();
 		adapter.remove(adapter.getItem(position));
 	}
 
-	private void markAll(boolean value) {
-		ListView lv = getListView();
-		for (int i = 0; i < lv.getAdapter().getCount(); i++) {
-			lv.setItemChecked(i, value);
-			((ShoppingItem) lv.getItemAtPosition(i)).setNeeded(value);
-		}
-	}
-
 	@Override
 	public boolean handleMenuSelection (int itemId) {
 		// Handle item selection
 		switch (itemId) {
-		case R.id.select_all:
-			markAll(true);
-			return true;
-		case R.id.select_none:
-			markAll(false);
-			return true;
 		case R.id.quit_reorder:
 			Intent intent = new Intent(getApplicationContext(), ShoppingListActivity.class);
 	        intent.putExtra(EXTRA_LIST_NAME, getShoppingList().getName());
+	        intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
 	        startActivity(intent);
+	        finish();
 		default:
 			return false;
 		}

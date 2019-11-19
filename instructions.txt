@@ -11,3 +11,13 @@ adb install -r c:\android\real_shopping_list\bin\real_shopping_list-debug.apk
 
 Android Browse Source Code 						
 http://android.git.kernel.org/?p=platform/frameworks/base.git;a=tree;f=core/java/android;hb=HEAD
+
+
+DEBUGEAR LA BASE DE DATOS
+
+adb -e shell
+sqlite3 /data/data/edu.nadisoft.shopping/databases/shopping_list
+.tables
+...
+.exit
+exit

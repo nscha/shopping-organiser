@@ -5,22 +5,30 @@ import edu.nadisoft.shopping.entities.ShoppingLists;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
-public class ShoppingListActivity extends MenuedListActivity {
+/**
+ * ShoppingListActivity is the Activity used to display items in a shopping list,
+ * allowing user to mark or unmark them (as needed or bought)
+ * @author Nadia
+ */
+public class ShoppingListActivity extends MenuedShoppingListActivity {
 	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         String listName = getIntent().getStringExtra(EXTRA_LIST_NAME);
-        setShoppingList(ShoppingLists.getList(this, listName));
+        setShoppingList(ShoppingLists.getList(listName));
         setContentView(R.layout.shopping_list);
-		setListAdapter(new ArrayAdapter<ShoppingItem>(this, R.layout.list_item, getShoppingList().getFilteredItems()));
+		setListAdapter(new ArrayAdapter<ShoppingItem>(this, R.layout.checked_list_item, getShoppingList().getFilteredItems()));
 		
 		TextView listSelector = (TextView) this.findViewById(R.id.listSelector);
         listSelector.setText(getShoppingList().getName());
@@ -30,8 +38,42 @@ public class ShoppingListActivity extends MenuedListActivity {
 		lv.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
 		reviewCheckedItems();
     }
-    
-    private void reviewCheckedItems() {
+
+    @Override
+	protected void onRestart() {
+    	Log.i(this.getClass().getSimpleName(), "onRestart");
+		super.onRestart();
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	protected void onResume() {
+		Log.i(this.getClass().getSimpleName(), "onResume");
+		ListView lv = getListView();
+		ArrayAdapter<ShoppingItem> adapter = (ArrayAdapter<ShoppingItem>) lv.getAdapter();
+    	adapter.notifyDataSetChanged();
+		super.onResume();
+	}
+
+	@Override
+	protected void onStart() {
+		Log.i(this.getClass().getSimpleName(), "onStart");
+		super.onStart();
+	}
+
+	@Override
+	protected void onNewIntent(Intent intent) {
+    	String listName = intent.getStringExtra(EXTRA_LIST_NAME);
+        setShoppingList(ShoppingLists.getList(listName));
+		setListAdapter(new ArrayAdapter<ShoppingItem>(this, R.layout.checked_list_item, getShoppingList().getFilteredItems()));
+		TextView listSelector = (TextView) this.findViewById(R.id.listSelector);
+        listSelector.setText(getShoppingList().getName());
+		reviewCheckedItems();
+
+		super.onNewIntent(intent);
+	}
+
+	private void reviewCheckedItems() {
     	ListView lv = getListView();
     	for (int i = 0; i < lv.getCount(); i++){
     		ShoppingItem item = (ShoppingItem) lv.getItemAtPosition(i);
@@ -52,8 +94,22 @@ public class ShoppingListActivity extends MenuedListActivity {
 				}
 			}
 		}
-		ShoppingLists.save(this);
+		ShoppingLists.save();
 		super.onPause();
+	}
+
+	@Override
+	protected void onListItemClick(ListView l, View v, int position, long id) {
+		super.onListItemClick(l, v, position, id);
+		if (getShoppingList().filterByNeed()){
+			ListView lv = getListView();
+			ListAdapter adapter = lv.getAdapter();
+			for (int i = 0; i < adapter.getCount(); i++) {
+				if ( !lv.isItemChecked(i) )
+					return;
+			}			
+			Toast.makeText(this, getString(R.string.all_needed_items_bought), 2).show();
+		}
 	}
 
 	@SuppressWarnings("unchecked") /** TODO MEJORAR */
@@ -65,8 +121,14 @@ public class ShoppingListActivity extends MenuedListActivity {
 
 	    	ArrayAdapter<ShoppingItem> adapter = (ArrayAdapter<ShoppingItem>) lv.getAdapter();
 	    	ShoppingItem newItem = new ShoppingItem(text);
-	    	//adapter.add(newItem); // parece que no hace falta D:
-	    	ShoppingLists.addShoppingItem(this, newItem);
+	    	if ( getShoppingList().filterByNeed() ){
+	    		newItem.setNeeded(true);
+	    	}
+	    	
+	    	ShoppingLists.addShoppingItem(newItem);
+	    	if ( adapter.getPosition(newItem) < 0 ){
+	    		adapter.add(newItem); //The list the adapter has could be the same pointer or not
+	    	}
 	    	adapter.notifyDataSetChanged();
 	    	editText.setText("");
     	}
@@ -92,7 +154,11 @@ public class ShoppingListActivity extends MenuedListActivity {
 		ListView lv = getListView();
 		for (int i = 0; i < lv.getAdapter().getCount(); i++) {
 			lv.setItemChecked(i, value);
-			((ShoppingItem) lv.getItemAtPosition(i)).setNeeded(value);
+			if (getShoppingList().filterByNeed()) {
+				((ShoppingItem) lv.getItemAtPosition(i)).setNeeded(value);
+			} else {
+				((ShoppingItem) lv.getItemAtPosition(i)).setBought(value);
+			}
 		}
 	}
 

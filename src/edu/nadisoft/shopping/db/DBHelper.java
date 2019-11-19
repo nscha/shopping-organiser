@@ -58,6 +58,7 @@ public class DBHelper extends SQLiteOpenHelper {
         LISTS_COL_NAME + " TEXT, " +
         LISTS_COL_NEED_FILTER + " BOOLEAN);";
 	
+    private static Object lock = new Object();
 
     public DBHelper(Context context) {
     	super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -103,7 +104,6 @@ public class DBHelper extends SQLiteOpenHelper {
 		Log.w(DBHelper.class.getSimpleName(), "FORCE calling onCreate");
     	onCreate(db);
     	*/
-    	
 	}
 
 	@Override
@@ -116,7 +116,15 @@ public class DBHelper extends SQLiteOpenHelper {
         onCreate(db);
 	}
 
+	public void resetToFactory() {
+		synchronized (lock) {
+			SQLiteDatabase db = getWritableDatabase();
+			onCreate(db);
+		}
+	}
+
 	public List<ShoppingList> getLists() {
+		Log.d(DBHelper.class.getSimpleName(), "ENTERING getLists");
 		SQLiteDatabase db = getReadableDatabase();
 		
 		String sqlLists = "SELECT "+LISTS_COL_ID+", "+LISTS_COL_NAME+", "+LISTS_COL_NEED_FILTER+" FROM "+TABLE_NAME_LISTS;
@@ -187,74 +195,55 @@ public class DBHelper extends SQLiteOpenHelper {
 			list.addAll(items);
 		}
 		
+		Log.d(DBHelper.class.getSimpleName(), "EXITING getLists");
 		return shoppingLists;
 	}
 
-	/*
-	public List<ShoppingItem> getHomeItems(){
-		SQLiteDatabase db = getReadableDatabase();
-		db.close();
-		return getHCItems();
-		int listId = ShoppingList.HOME_LIST;
-		SQLiteDatabase db = getReadableDatabase();
-		String sql = "SELECT " + ITEMS_COL_NAME + ", " + ITEMS_COL_NEEDED + ", " + ITEMS_COL_BOUGHT + ", " + ORDERINGS_COL_ORDERING +
-			" FROM " + TABLE_NAME_ITEMS + " LEFT OUTER JOIN " + TABLE_NAME_ORDERINGS +
-			" ON " + TABLE_NAME_ITEMS+"."+ITEMS_COL_ID + " = " + TABLE_NAME_ORDERINGS+"."+ORDERINGS_COL_ITEM_ID +
-			" WHERE " + TABLE_NAME_ORDERINGS+"."+ORDERINGS_COL_LIST_ID + " = " + listId + 
-			" OR " + TABLE_NAME_ORDERINGS+"."+ORDERINGS_COL_LIST_ID + " IS NULL) ORDER BY " + ORDERINGS_COL_ORDERING;
-		
-		Cursor cursor = db.rawQuery(sql, null);
-		if (cursor == null) {
-            return null;
-        } else if (!cursor.moveToFirst()) {
-            cursor.close();
-            return null;
-        }
-		List<ShoppingItem> items = new ArrayList<ShoppingItem>(cursor.getCount()); 
-		for (int i = 0; i < cursor.getCount(); i++){
-			int col = 0;
-			String name = cursor.getString(col++);
-			boolean needed = cursor.getInt(col++) == 1;
-			boolean bought = cursor.getInt(col++) == 1;
-			//int index = cursor.getInt(col++);
-			ShoppingItem item = new ShoppingItem(name, needed, bought);
-			items.add(item);
-			cursor.moveToNext();
-		}
-		db.close();
-		return items;
+	public void save(List<ShoppingList> oLists) {
+		Log.d(DBHelper.class.getSimpleName(), "->ENTERING save unsynced");
+		synchronized (lock) {
+			Log.d(DBHelper.class.getSimpleName(), "*->ENTERING save SYNC ZONE");
+			SQLiteDatabase db = getWritableDatabase();
+			db.execSQL("DELETE FROM " + TABLE_NAME_POSITIONS);
+			db.execSQL("DELETE FROM " + TABLE_NAME_ITEMS);
+			db.execSQL("DELETE FROM " + TABLE_NAME_LISTS);
 
-	}
-*/
-
-	public void save(List<ShoppingList> lists) {
-		SQLiteDatabase db = getWritableDatabase();
-		db.execSQL("DELETE FROM " + TABLE_NAME_ITEMS);
-		db.execSQL("DELETE FROM " + TABLE_NAME_POSITIONS);
-		/** TODO borrar tambien lists ? */
-		
-		ShoppingList aList = lists.get(0); //Actually all lists have the same items
-		int item_id = 1;
-		for (ShoppingItem item : aList.getItems()) {
-			ContentValues values = new ContentValues();
-			values.put(ITEMS_COL_ID, item_id);
-			values.put(ITEMS_COL_NAME, item.getName());
-			values.put(ITEMS_COL_NEEDED, item.isNeeded());
-			values.put(ITEMS_COL_BOUGHT, item.isBought());
-			
+			// Inserting lists
+			List<ShoppingList> lists = new ArrayList<ShoppingList>(oLists);
 			for (ShoppingList list : lists) {
-				int position = list.indexOf(item);
-				ContentValues positionsValues = new ContentValues();
-				positionsValues.put(POSITIONS_COL_ITEM_ID, item_id);
-				positionsValues.put(POSITIONS_COL_LIST_ID, list.getId());
-				positionsValues.put(POSITIONS_COL_POSITION, position);
-				db.insert(TABLE_NAME_POSITIONS, null, positionsValues);
+				ContentValues values = new ContentValues();
+				values.put(LISTS_COL_ID, list.getId());
+				values.put(LISTS_COL_NAME, list.getName());
+				values.put(LISTS_COL_NEED_FILTER, list.filterByNeed());
+				db.insert(TABLE_NAME_LISTS, null, values);
 			}
-			
-			db.insert(TABLE_NAME_ITEMS, null, values);
-			item_id++;
+
+			// Inserting items
+			ShoppingList aList = lists.get(0); // Actually all lists have the same items
+			int item_id = 1;
+			for (ShoppingItem item : new ArrayList<ShoppingItem>(aList.getItems())) {
+				ContentValues values = new ContentValues();
+				values.put(ITEMS_COL_ID, item_id);
+				values.put(ITEMS_COL_NAME, item.getName());
+				values.put(ITEMS_COL_NEEDED, item.isNeeded());
+				values.put(ITEMS_COL_BOUGHT, item.isBought());
+
+				for (ShoppingList list : lists) {
+					int position = list.indexOf(item);
+					ContentValues positionsValues = new ContentValues();
+					positionsValues.put(POSITIONS_COL_ITEM_ID, item_id);
+					positionsValues.put(POSITIONS_COL_LIST_ID, list.getId());
+					positionsValues.put(POSITIONS_COL_POSITION, position);
+					db.insert(TABLE_NAME_POSITIONS, null, positionsValues);
+				}
+
+				db.insert(TABLE_NAME_ITEMS, null, values);
+				item_id++;
+			}
+			db.close();
+			Log.d(DBHelper.class.getSimpleName(), "*<- EXITING save SYNCED ZONE");
 		}
-		db.close();
+		Log.d(DBHelper.class.getSimpleName(), "<- EXITING save unsynced");
 	}
 
 	private void saveHCItems(List<ShoppingItem> items, SQLiteDatabase db){
@@ -285,42 +274,95 @@ public class DBHelper extends SQLiteOpenHelper {
 	
 	public List<ShoppingItem> getHCItems(){
 		List<ShoppingItem> items = new ArrayList<ShoppingItem>();
-		ShoppingItem item = new ShoppingItem("Leche");
-		item.setNeeded(true);
-		items.add(item);
-		item = new ShoppingItem("Marcador Indeleble");
-		item.setNeeded(true);
-		items.add(item);
-		item = new ShoppingItem("Huevos");
-		items.add(item);
-		item = new ShoppingItem("Manteca");
-		items.add(item);
-		item = new ShoppingItem("Papas");
-		items.add(item);
-		item = new ShoppingItem("Fideos");
-		items.add(item);
-		item = new ShoppingItem("Queso Blanco");
-		items.add(item);
-		item = new ShoppingItem("Manteca Untable");
-		items.add(item);
-		item = new ShoppingItem("Papel Transparente");
-		items.add(item);
-		item = new ShoppingItem("Papel Metalico");
-		items.add(item);
-		item = new ShoppingItem("Carne Picada");
-		items.add(item);
-		item = new ShoppingItem("Pechugas de Pollo");
-		items.add(item);
-		item = new ShoppingItem("Tomate");
-		item.setNeeded(true);
-		items.add(item);
-		item = new ShoppingItem("Lechuga");
-		item.setNeeded(true);
-		items.add(item);
-		item = new ShoppingItem("Jamon y Queso");
-		items.add(item);
-		item = new ShoppingItem("Pan Lactal");
-		items.add(item);
+		items.add(new ShoppingItem("Toallitas diarias, normales, nocturnas"));
+		items.add(new ShoppingItem("Dentifrico"));
+		items.add(new ShoppingItem("Desodorante Nai"));
+		items.add(new ShoppingItem("Desodorante Maxi"));
+		items.add(new ShoppingItem("Shampoo (VO5, Sedal, Capilatis de Ortiga)"));
+		items.add(new ShoppingItem("Papel Higienico"));
+		items.add(new ShoppingItem("Jabon"));
+		items.add(new ShoppingItem("Desodorante de ambientes"));
+		items.add(new ShoppingItem("Carilinas"));
+		items.add(new ShoppingItem("Gillette Match 3 Turbo"));
+		items.add(new ShoppingItem("Gillette Foamy Piel Sensible"));
+		items.add(new ShoppingItem("Rapiditas"));
+		items.add(new ShoppingItem("Salchichas"));
+		items.add(new ShoppingItem("Medallones de Pollo"));
+		items.add(new ShoppingItem("Patitas de Pollo (u otro relleno)"));
+		items.add(new ShoppingItem("Pechugas de Pollo"));
+		items.add(new ShoppingItem("Carne picada"));
+		items.add(new ShoppingItem("Churrasco de Cuadril"));
+		items.add(new ShoppingItem("Colita de Cuadril"));
+		items.add(new ShoppingItem("Pecetto de Vaca"));
+		items.add(new ShoppingItem("Huevos"));
+		items.add(new ShoppingItem("Manteca"));
+		items.add(new ShoppingItem("Manteca untable"));
+		items.add(new ShoppingItem("Leche"));
+		items.add(new ShoppingItem("Limon Minerva"));
+		items.add(new ShoppingItem("Queso Blanco"));
+		items.add(new ShoppingItem("Mayonesa"));
+		items.add(new ShoppingItem("Dulce de Leche"));
+		items.add(new ShoppingItem("Crema"));
+		items.add(new ShoppingItem("Tholem"));
+		items.add(new ShoppingItem("Queso Port Salut"));
+		items.add(new ShoppingItem("Dulce de Batata"));
+		items.add(new ShoppingItem("Pascualina"));
+		items.add(new ShoppingItem("Jamon cocido"));
+		items.add(new ShoppingItem("Queso de maquina"));
+		items.add(new ShoppingItem("Queso de rallar"));
+		items.add(new ShoppingItem("Tomate"));
+		items.add(new ShoppingItem("Lechuga"));
+		items.add(new ShoppingItem("Cebolla de Verdeo"));
+		items.add(new ShoppingItem("Cebollin (Ciboulette)"));
+		items.add(new ShoppingItem("Papel Transparente"));
+		items.add(new ShoppingItem("Papel Metalico"));
+		items.add(new ShoppingItem("Bolsas de Residuo Num 3"));
+		items.add(new ShoppingItem("Rolisec"));
+		items.add(new ShoppingItem("Atun"));
+		items.add(new ShoppingItem("Choclo cremoso (o no)"));
+		items.add(new ShoppingItem("Morron"));
+		items.add(new ShoppingItem("Sal gruesa"));
+		items.add(new ShoppingItem("Sal fina"));
+		items.add(new ShoppingItem("Arroz Blanco"));
+		items.add(new ShoppingItem("Galletitas dulces"));
+		items.add(new ShoppingItem("Galletitas de agua"));
+		items.add(new ShoppingItem("Talitas"));
+		items.add(new ShoppingItem("Madalenas"));
+		items.add(new ShoppingItem("Vainillas"));
+		items.add(new ShoppingItem("Nesquik"));
+		items.add(new ShoppingItem("Azucar"));
+		items.add(new ShoppingItem("Capuccino"));
+		items.add(new ShoppingItem("Zucaritas"));
+		items.add(new ShoppingItem("Provenzal"));
+		items.add(new ShoppingItem("Pimienta"));
+		items.add(new ShoppingItem("Pimenton Extra"));
+		items.add(new ShoppingItem("Aji Molido"));
+		items.add(new ShoppingItem("Barritas de Cereal"));
+		items.add(new ShoppingItem("Chuker"));
+		items.add(new ShoppingItem("Miel"));
+		items.add(new ShoppingItem("Papa"));
+		items.add(new ShoppingItem("Aceite de girasol"));
+		items.add(new ShoppingItem("Pan Lactal"));
+		items.add(new ShoppingItem("Harina"));
+		items.add(new ShoppingItem("Fideos"));
+		items.add(new ShoppingItem("Municiones"));
+		items.add(new ShoppingItem("Fideos con Salsa"));
+		items.add(new ShoppingItem("Arroz con Salsa"));
+		items.add(new ShoppingItem("Sabor en cubos"));
+		items.add(new ShoppingItem("Caldo en cubos"));
+		items.add(new ShoppingItem("7up"));
+		items.add(new ShoppingItem("Jabon Blanco"));
+		items.add(new ShoppingItem("Lavandina"));
+		items.add(new ShoppingItem("Poett"));
+		items.add(new ShoppingItem("Cif Crema"));
+		items.add(new ShoppingItem("Blem"));
+		items.add(new ShoppingItem("Mr Musculo Antigrasa"));
+		items.add(new ShoppingItem("Detergente (Lavavajillas) Ala Blanco"));
+		items.add(new ShoppingItem("Ceramicol Incoloro"));
+		items.add(new ShoppingItem("Lamparitas bajo consumo"));
+		items.add(new ShoppingItem("Lamparitas"));
+		items.add(new ShoppingItem("Cuaderno"));
+		items.add(new ShoppingItem("Marcador Indeleble"));
 		return items;
 	}
 

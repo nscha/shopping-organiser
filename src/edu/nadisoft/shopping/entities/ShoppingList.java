@@ -17,6 +17,14 @@ public class ShoppingList {
 		this.needFilter = needFilter;
 	}
 
+	public ShoppingList(ShoppingList shoppingList) {
+		super();
+		this.id = shoppingList.id;
+		this.name = shoppingList.name;
+		this.needFilter = shoppingList.needFilter;
+		this.items = new ArrayList<ShoppingItem>(shoppingList.items);
+	}
+
 	public int getId() {
 		return id;
 	}
@@ -47,12 +55,20 @@ public class ShoppingList {
 		}
 	}
 
+	public void setName(String name) {
+		this.name = name;
+	}
+
 	public void addAll(List<ShoppingItem> shoppingItems) {
 		items.addAll(shoppingItems);
 	}
 
 	public void addShoppingItem(ShoppingItem item) {
 		items.add(item);
+	}
+	
+	public void setFilterByNeed(boolean needFilter){
+		this.needFilter = needFilter;
 	}
 
 	public int indexOf(ShoppingItem item) {
@@ -71,7 +87,18 @@ public class ShoppingList {
 		int position = items.indexOf(item);
 		items.remove(item);
 		int newPosition = position + modifier;
-		items.add(Math.min(items.size(), Math.max(0, newPosition)), item);
+		if ( newPosition < 0 ) {
+			newPosition = items.size();
+		}
+		if ( newPosition > items.size() ) {
+			newPosition = 0;
+		}
+		items.add(newPosition, item);
+	}
+
+	@Override
+	public String toString() {
+		return getName();
 	}
 
 }
