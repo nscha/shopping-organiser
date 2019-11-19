@@ -42,9 +42,9 @@ public class MyProvider extends ContentProvider {
 
         matcher.addURI(authority, "items", ITEMS);
         matcher.addURI(authority, "items/*", ITEMS_ID);
-/*
         matcher.addURI(authority, "lists", LISTS);
         matcher.addURI(authority, "lists/*", LISTS_ID);
+/*
         matcher.addURI(authority, "items/list/*", ITEMS_LIST_ID);
 */
         return matcher;
@@ -66,11 +66,11 @@ public class MyProvider extends ContentProvider {
 	    		return Items.CONTENT_TYPE;
 	        case ITEMS_ID:
 	    		return Items.CONTENT_ITEM_TYPE;
-/*
 	        case LISTS:
 	    		return Lists.CONTENT_TYPE;
 	        case LISTS_ID:
 	    		return Lists.CONTENT_ITEM_TYPE;
+/*
 	        case ITEMS_LIST_ID:
 	    		return Items.CONTENT_TYPE;
 */
@@ -98,7 +98,6 @@ public class MyProvider extends ContentProvider {
 	        	defaultSortOrder = ShoppingOrganiserContract.Items.DEFAULT_SORT;
 	        	qb.appendWhere(ShoppingOrganiserContract.Items._ID + "=" + uri.getPathSegments().get(1));
 	            break;
-/*
 	        case LISTS:
 	            qb.setTables(MyDatabase.Tables.LISTS);
 	        	defaultProjection = ShoppingOrganiserContract.Lists.DEFAULT_PROJECTION;
@@ -110,6 +109,7 @@ public class MyProvider extends ContentProvider {
 	        	defaultSortOrder = ShoppingOrganiserContract.Lists.DEFAULT_SORT;
 	        	qb.appendWhere(ShoppingOrganiserContract.Lists._ID + "=" + uri.getPathSegments().get(1));
 	            break;
+/*
 	        case ITEMS_LIST_ID:
 	            qb.setTables(MyDatabase.Tables.ITEMS+", "+MyDatabase.Tables.LISTS+", "+MyDatabase.Tables.ORDERINGS);
 	            //setTables("foo, bar") setTables("foo LEFT OUTER JOIN bar ON (foo.id = bar.foo_id)")
@@ -196,9 +196,18 @@ public class MyProvider extends ContentProvider {
 	            count = db.delete(MyDatabase.Tables.ITEMS, where, whereArgs);
 	            break;
 	        case ITEMS_ID:
-	            String messageId = uri.getPathSegments().get(1);
+	            String itemId = uri.getPathSegments().get(1);
 	            count = db.delete(MyDatabase.Tables.ITEMS,
-	            		ShoppingOrganiserContract.Items._ID + "=" + messageId +
+	            		ShoppingOrganiserContract.Items._ID + "=" + itemId +
+	            		(!TextUtils.isEmpty(where) ? " AND (" + where + ')' : ""), whereArgs);
+	            break;
+	        case LISTS:
+	            count = db.delete(MyDatabase.Tables.LISTS, where, whereArgs);
+	            break;
+	        case LISTS_ID:
+	            String listId = uri.getPathSegments().get(1);
+	            count = db.delete(MyDatabase.Tables.LISTS,
+	            		ShoppingOrganiserContract.Lists._ID + "=" + listId +
 	            		(!TextUtils.isEmpty(where) ? " AND (" + where + ')' : ""), whereArgs);
 	            break;
 	        default:
@@ -218,9 +227,18 @@ public class MyProvider extends ContentProvider {
 	            count = db.update(MyDatabase.Tables.ITEMS, values, where, whereArgs);
 	            break;
 	        case ITEMS_ID:
-	            String messageId = uri.getPathSegments().get(1);
+	            String itemId = uri.getPathSegments().get(1);
 	            count = db.update(MyDatabase.Tables.ITEMS, values,
-	            		ShoppingOrganiserContract.Items._ID + "=" + messageId +
+	            		ShoppingOrganiserContract.Items._ID + "=" + itemId +
+	            		(!TextUtils.isEmpty(where) ? " AND (" + where + ')' : ""), whereArgs);
+	            break;
+	        case LISTS:
+	            count = db.update(MyDatabase.Tables.LISTS, values, where, whereArgs);
+	            break;
+	        case LISTS_ID:
+	            String listId = uri.getPathSegments().get(1);
+	            count = db.update(MyDatabase.Tables.LISTS, values,
+	            		ShoppingOrganiserContract.Lists._ID + "=" + listId +
 	            		(!TextUtils.isEmpty(where) ? " AND (" + where + ')' : ""), whereArgs);
 	            break;
 	        default:

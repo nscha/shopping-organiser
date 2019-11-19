@@ -66,6 +66,7 @@ public class ShoppingOrganiserContract {
         }
     }
 */
+    
     public static class Items implements ItemColumns, BaseColumns {
     	/** Items content Uri. */
     	public static final Uri CONTENT_URI =
@@ -105,7 +106,7 @@ public class ShoppingOrganiserContract {
 				ShoppingOrganiserContract.Lists._ID, ShoppingOrganiserContract.Lists.LIST_NAME,
 				ShoppingOrganiserContract.Lists.LIST_SETS_FILTER };
         /** Default "ORDER BY" clause. */
-        public static final String DEFAULT_SORT = BaseColumns._ID + " ASC";
+        public static final String DEFAULT_SORT = LIST_SETS_FILTER + " DESC, " +BaseColumns._ID + " ASC";
 
     	/** Build {@link Uri} for request all messages. */
         public static Uri buildListsUri() {

@@ -3,5 +3,12 @@
 
     <string name="hello">Hello World, ShoppingOrganiserActivity!</string>
     <string name="app_name">Shopping Organiser</string>
-
+    <string name="editingListActivityLabel">Edit Lists</string>
+    <string name="new_list">New List</string>
+    <string name="add_item">Add</string>
+	<string name="remove_item">Remove</string>
+    <string name="edit">Edit</string>
+    <string name="list_name_prompt">New list Name:</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
 </resources>

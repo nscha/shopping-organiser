@@ -2,13 +2,13 @@ package com.nadisoft.shopping.organiser.entities;
 
 public class BaseEntity {
 
-	private Integer _id;
+	private long _id;
 
-	public Integer getId() {
+	public long getId() {
 		return _id;
 	}
 
-	public void setId(Integer id) {
+	public void setId(long id) {
 		this._id = id;
 	}
 	

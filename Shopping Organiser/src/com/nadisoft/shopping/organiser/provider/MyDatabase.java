@@ -1,12 +1,13 @@
 package com.nadisoft.shopping.organiser.provider;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
 
 import com.nadisoft.shopping.organiser.provider.ShoppingOrganiserContract.ItemColumns;
-//import com.nadisoft.shopping.organiser.provider.ShoppingOrganiserContract.ListColumns;
+import com.nadisoft.shopping.organiser.provider.ShoppingOrganiserContract.ListColumns;
 //import com.nadisoft.shopping.organiser.provider.ShoppingOrganiserContract.OrderingColumns;
 
 public class MyDatabase extends SQLiteOpenHelper {
@@ -28,19 +29,30 @@ public class MyDatabase extends SQLiteOpenHelper {
 
 	@Override
 	public void onCreate(SQLiteDatabase db) {
+
 		db.execSQL("CREATE TABLE " + Tables.ITEMS + " (" 
 				+ BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
 				+ ItemColumns.ITEM_NAME + " TEXT NOT NULL,"
 				+ ItemColumns.ITEM_NEEDED + " BOOLEAN NOT NULL,"
 				+ ItemColumns.ITEM_BOUGHT + " BOOLEAN NOT NULL,"
 				+ "UNIQUE (" + BaseColumns._ID + ") ON CONFLICT REPLACE)");
-/*
+
 		db.execSQL("CREATE TABLE " + Tables.LISTS + " (" 
 				+ BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
 				+ ListColumns.LIST_NAME + " TEXT NOT NULL,"
 				+ ListColumns.LIST_SETS_FILTER + " BOOLEAN NOT NULL,"
 				+ "UNIQUE (" + BaseColumns._ID + ") ON CONFLICT REPLACE)");
 
+		ContentValues values = new ContentValues();
+		values.put(ListColumns.LIST_NAME, "Home");
+		values.put(ListColumns.LIST_SETS_FILTER, true);
+		db.insert(Tables.LISTS, null, values);
+
+		values = new ContentValues();
+		values.put(ListColumns.LIST_NAME, "Shop");
+		values.put(ListColumns.LIST_SETS_FILTER, false);
+		db.insert(Tables.LISTS, null, values);
+/*
 		db.execSQL("CREATE TABLE " + Tables.ORDERINGS + " (" 
 				+ BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
 				+ OrderingColumns.ORDERING_ITEM_ID + " INTEGER NOT NULL,"
