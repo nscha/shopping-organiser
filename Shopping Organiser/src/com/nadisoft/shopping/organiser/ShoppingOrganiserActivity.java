@@ -35,7 +35,7 @@ public class ShoppingOrganiserActivity extends SherlockListActivity implements A
         setUpList();
     }
 
-    private void setUpList() {
+	private void setUpList() {
         long listId = getListId();
         ListView lv = getListView();
         lv.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
@@ -59,13 +59,15 @@ public class ShoppingOrganiserActivity extends SherlockListActivity implements A
 			return ShoppingContract.Items.ITEM_NEEDED + "=1";
 	}
 
+	@SuppressWarnings("deprecation")
 	private void changeList(long listId){
     	SimpleCursorAdapter adapter = (SimpleCursorAdapter) getListAdapter();
     	currentListSetsFilter = listSetsFilter(listId);
-    	@SuppressWarnings("deprecation")
 		Cursor cursor = managedQuery(ShoppingContract.Items.buildListItemsUri(listId), 
 				null, getSelection(), null, null);
+    	Cursor oldCursor = adapter.getCursor();
     	adapter.changeCursor(cursor);
+    	stopManagingCursor(oldCursor); // fix for SDK >= 3
     	adapter.notifyDataSetChanged();
     }
 
@@ -170,6 +172,7 @@ public class ShoppingOrganiserActivity extends SherlockListActivity implements A
 			restartShopping();
 			break;
 		case R.id.menu_item_help:
+			new HelpDialog(this, HelpDialog.HelpType.FIRST_TIME).show();
 			break;
 		default:
 			break;

@@ -152,7 +152,7 @@ public class EditItemsActivity extends SherlockListActivity{
 	    			itemOnEdition = null;
 	    		}
 	    	});
-		
+
 		return builder.show();
 	}
 
