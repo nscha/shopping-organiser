@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Shopping Organiser</string>
+    <string name="default_list_home">Home</string>
+    <string name="default_list_shop">Shop</string>
     <string name="editingItemActivityLabel">Edit Items</string>
     <string name="editingListActivityLabel">Edit Lists</string>
     <string name="menu_edit_list">Edit this list</string>
     <string name="menu_edit_lists">Edit lists</string>
+    <string name="menu_continue">Continue shopping</string>
     <string name="menu_restart">Restart shopping</string>
     <string name="menu_done">Done</string>
     <string name="menu_help">Help</string>
@@ -22,6 +25,21 @@
     <string name="ok">OK</string>
     <string name="yes">Yes</string>
     <string name="cancel">Cancel</string>
+    <string name="error">Error</string>
+    <string name="menu_settings">Settings</string>
+    <string name="setting_title_backup">Backup Options</string>
+    <string name="setting_export">Export</string>
+	<string name="setting_export_process">Exporting database to</string> 
+    <string name="setting_export_summary_1">Will export to</string>
+    <string name="setting_export_summary_2">in external storage root</string>
+    <string name="setting_export_success">Successful backup</string>
+    <string name="setting_import">Import</string>
+	<string name="setting_import_process">Restoring database from</string> 
+    <string name="setting_import_summary_1">Will import from</string>
+    <string name="setting_import_summary_2">file in external storage root</string>
+    <string name="setting_import_success">Successful import from backup</string>
+    <string name="setting_backup_no_ext">External storage not available</string>
+    <string name="bag_reminder">Remember to bring your own bags!</string>
     <string name="first_time_help_title">Welcome to Shopping Organiser!</string>
     <string name="first_time_help_introduction">This application is meant to ease the process of normal home shopping.\nAll screens have a Help menu item available at the top right, use it whenever you are not sure about something.</string>
     <string name="first_time_help_normal_use_title">Normal Use of this Application</string>
@@ -34,6 +52,7 @@
     <string name="shopping_help_quick_reference_title">Menu Quick Reference</string>
     <string name="shopping_help_quick_reference_menu_edit_list">Edit this list: Takes you to the screen where you can add items, and also set the ordering of the items for the current list.</string>
     <string name="shopping_help_quick_reference_menu_edit_lists">Edit lists: Takes you to the screen where you can add new shop lists (in case you normally use more than one local shop and need more than one shop layout), you can also edit the names of the initial lists.</string>
+    <string name="shopping_help_quick_reference_menu_continue">Continue shopping: allows you to quickly clear from your Shop views the items you have bought but keep those still needed. In Home view items bought will be unchecked.</string>
     <string name="shopping_help_quick_reference_menu_restart">Restart shopping: allows you to quickly uncheck all items on all lists so you can start your shopping anew.</string>
     <string name="help_menu_help">Help: On the top right of your screen you will always have the question mark icon, use it to get tips on the use of the current screen.</string>
     <string name="edit_items_help_title">Edit Items Help</string>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
 
 	<style name="Theme.HoloEverywhereLight.Sherlock.ForceOverflow" parent="Theme.Sherlock.Light.ForceOverflow">
 		<item name="android:windowBackground">@drawable/background_holo_light</item>
@@ -14,6 +14,7 @@
 
 	<style name="ListViewStyle" parent="android:Widget.ListView">
 		<item name="android:cacheColorHint">#00000000</item>
+		<item name="android:listSelector">@drawable/list_selector_holo_light</item>
 	</style>
 
 	<style name="AlertDialogHoloLight">

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+    <PreferenceCategory 
+        android:title="@string/setting_title_backup"
+        android:key="setting_title_backup">
+    <Preference android:title="@string/setting_export"
+        android:key="setting_export" >        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="http://www.example.com" />
+    </Preference>
+    <Preference android:title="@string/setting_import" 
+        android:key="setting_import" >
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="http://www.example.com" />
+    </Preference>
+    </PreferenceCategory>
+</PreferenceScreen>

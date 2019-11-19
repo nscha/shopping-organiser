@@ -1,13 +1,20 @@
 package com.nadisoft.shopping.organiser;
 
+import java.lang.reflect.Field;
+
 import android.app.Dialog;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
@@ -27,20 +34,50 @@ import com.nadisoft.shopping.organiser.provider.ShoppingContract;
 public class ShoppingOrganiserActivity extends SherlockListActivity implements ActionBar.OnNavigationListener, ViewBinder {
 	SimpleCursorAdapter navListAdapter;
 	boolean currentListSetsFilter;
+	View footer;
 
 	static final int DIALOG_HELP_FIRST_TIME = 0;
 	static final int DIALOG_SHOPPING_HELP = 1;
+
+	private static final String TAG = "ShoppingOrganiserActivity";
+	private static final String BUNDLE_NAVBAR_INDEX = "bundleActionBarNavIndex";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.shopping_list);
 
-        currentListSetsFilter = true;
-        setUpActionBar();
+    	int actionBarNavigationIndex = 0;
+        if ( savedInstanceState != null ){
+        	actionBarNavigationIndex = savedInstanceState.getInt(BUNDLE_NAVBAR_INDEX);
+        }
+
+        setUpActionBar(actionBarNavigationIndex);
+        currentListSetsFilter = listSetsFilter(getListId());
         setUpList();
         showFirstTimeHelp();
+        forceMenuOverflow();
     }
+
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		outState.putInt(BUNDLE_NAVBAR_INDEX, getSupportActionBar().getSelectedNavigationIndex());
+	}
+
+	// Horrible hack, that will even stop working with new ActionBarSherlock
+	private void forceMenuOverflow() {
+		try {
+		    ViewConfiguration config = ViewConfiguration.get(this);
+		    Field menuKeyField = ViewConfiguration.class.getDeclaredField("sHasPermanentMenuKey");
+		    if (menuKeyField != null) {
+		        menuKeyField.setAccessible(true);
+		        menuKeyField.setBoolean(config, false);
+		    }
+		} catch (Exception e) {
+		    e.printStackTrace();
+		}
+	}
 
 	@Override
 	protected Dialog onCreateDialog(int id) {
@@ -60,14 +97,62 @@ public class ShoppingOrganiserActivity extends SherlockListActivity implements A
 
 	private Dialog createHelpFirstTimeDialog() {
 		HelpDialogBuilder builder = new HelpDialogBuilder(this, HelpDialogBuilder.HelpType.FIRST_TIME);
-		return builder.show();
+		return builder.create();
 	}
 
 	private Dialog createShoppingHelpDialog() {
 		HelpDialogBuilder builder = new HelpDialogBuilder(this, HelpDialogBuilder.HelpType.SHOPPING);
-		return builder.show();
+		return builder.create();
 	}
 
+	private void setUpList() {
+        ListView lv = getListView();
+        lv.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+        footer = ((LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.shopping_list_item_reminder, null, false);
+		Log.v(TAG, "changeList adding footer to get the right adapter");
+		lv.addFooterView(footer);
+		SimpleCursorAdapter itemsAdapter = createListItemsAdapter(getListId());
+		itemsAdapter.setViewBinder(this);
+		setListAdapter(itemsAdapter);
+	}
+
+	@SuppressWarnings("deprecation")
+	private SimpleCursorAdapter createListItemsAdapter(long listId) {
+		Cursor cursor = getListItemsCursor(listId);
+		return new SimpleCursorAdapter(getSupportActionBar().getThemedContext(),
+				R.layout.shopping_list_item, cursor,
+				new String[] { ShoppingContract.Items.ITEM_NAME },
+				new int[] { R.id.itemText });
+	}
+
+	@SuppressWarnings("deprecation")
+	private void changeList(long listId){
+		currentListSetsFilter = listSetsFilter(listId);
+		boolean needsReminderFooter = currentListSetsFilter;
+		Cursor cursor = getListItemsCursor(listId);
+		SimpleCursorAdapter itemsAdapter = (SimpleCursorAdapter) getListAdapter();
+		Cursor oldCursor = itemsAdapter.getCursor();
+		itemsAdapter.changeCursor(cursor);
+		stopManagingCursor(oldCursor); // fix for SDK >= 3
+		itemsAdapter.notifyDataSetChanged();
+
+		ListView lv = getListView();
+		Log.v(TAG, "changeList removing footer just in case (can we?)");
+		lv.removeFooterView(footer);
+		if (needsReminderFooter) {
+			Log.v(TAG, "changeList adding footer cause we need it");
+			lv.addFooterView(footer);
+		}
+    }
+
+	@SuppressWarnings("deprecation")
+	private Cursor getListItemsCursor(long listId) {
+		return managedQuery(ShoppingContract.Items.buildListItemsUri(listId), 
+				null, getSelection(), null, null);
+	}
+
+	/*
+	 * commented on 13 07 13 con los problemas de footer, borrar si no hubo mas probs
 	private void setUpList() {
         long listId = getListId();
         ListView lv = getListView();
@@ -82,8 +167,45 @@ public class ShoppingOrganiserActivity extends SherlockListActivity implements A
 				new String[] { ShoppingContract.Items.ITEM_NAME },
 				new int[] { R.id.itemText });
 		itemsAdapter.setViewBinder(this);
+		if ( currentListSetsFilter ){
+			Log.v(TAG, "setUpList needsFooter");
+			if ( footer == null ) {
+				Log.v(TAG, "setUpList footer was null");
+				footer = ((LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.shopping_list_item_reminder, null, false);
+			}
+			Log.v(TAG, "setUpList adding Footer");
+			lv.addFooterView(footer);
+		}
 		setListAdapter(itemsAdapter);
 	}
+
+	@SuppressWarnings("deprecation")
+	private void changeList(long listId){
+    	SimpleCursorAdapter adapter = (SimpleCursorAdapter) getListAdapter();
+    	currentListSetsFilter = listSetsFilter(listId);
+		Cursor cursor = managedQuery(ShoppingContract.Items.buildListItemsUri(listId), 
+				null, getSelection(), null, null);
+    	Cursor oldCursor = adapter.getCursor();
+    	adapter.changeCursor(cursor);
+    	stopManagingCursor(oldCursor); // fix for SDK >= 3
+
+    	ListView lv = getListView();
+		try {
+			Log.v(TAG, "changeList removing Footer");
+			lv.removeFooterView(footer);
+		} catch (Exception e) {
+			Log.e(TAG, "changeList could not remove Footer");
+			// different bugs in ListView could throw NPE or ClassCast
+			// let's assume that in this case there was no footer
+		}
+		if (currentListSetsFilter) {
+			Log.v(TAG, "changeList adding Footer");
+			lv.addFooterView(footer);
+		}
+		else {Log.v(TAG, "changeList not adding Footer");}
+    	adapter.notifyDataSetChanged();
+    }
+	 */
 
 	private String getSelection() {
 		if ( currentListSetsFilter )
@@ -101,18 +223,6 @@ public class ShoppingOrganiserActivity extends SherlockListActivity implements A
 			showDialog(DIALOG_HELP_FIRST_TIME);
 		}
 	}
-
-	@SuppressWarnings("deprecation")
-	private void changeList(long listId){
-    	SimpleCursorAdapter adapter = (SimpleCursorAdapter) getListAdapter();
-    	currentListSetsFilter = listSetsFilter(listId);
-		Cursor cursor = managedQuery(ShoppingContract.Items.buildListItemsUri(listId), 
-				null, getSelection(), null, null);
-    	Cursor oldCursor = adapter.getCursor();
-    	adapter.changeCursor(cursor);
-    	stopManagingCursor(oldCursor); // fix for SDK >= 3
-    	adapter.notifyDataSetChanged();
-    }
 
 	@Override
 	public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
@@ -140,10 +250,10 @@ public class ShoppingOrganiserActivity extends SherlockListActivity implements A
 			if ( !listView.isItemChecked(i) )
 				return;
 		}
-		Toast.makeText(this, getString(R.string.info_all_items_bought), 2).show();
+		Toast.makeText(this, getString(R.string.info_all_items_bought), Toast.LENGTH_LONG).show();
 	}
 
-	private void setUpActionBar() {
+	private void setUpActionBar(int actionBarNavigationIndex) {
 		@SuppressWarnings("deprecation")
 		Cursor cursor = managedQuery(ShoppingContract.Lists.buildListsUri(), 
 				null, null, null, null);
@@ -155,29 +265,24 @@ public class ShoppingOrganiserActivity extends SherlockListActivity implements A
 
 			@Override
 			public View getView(int position, View convertView, ViewGroup parent) {
-				View view = super.getView(position, convertView, parent);
-				switch (position) {
-				case 0:
-					((TextView)view).setCompoundDrawablesWithIntrinsicBounds(R.drawable.ab_spinner_homeicon,0,0,0);
-					break;
-				default:
-					((TextView)view).setCompoundDrawablesWithIntrinsicBounds(R.drawable.ab_spinner_shopicon,0,0,0);
-					break;
+				TextView view = (TextView)super.getView(position, convertView, parent);
+				int resource = R.drawable.ab_spinner_shopicon;
+				if ( position == 0 ){
+					resource = R.drawable.ab_spinner_homeicon;
 				}
+				view.setCompoundDrawablesWithIntrinsicBounds(resource,0,0,0);
+				view.setGravity(Gravity.CENTER_VERTICAL);
 				return view;
 			}
 
 			@Override
 			public View getDropDownView(int position, View convertView, ViewGroup parent) {
 				View view = super.getDropDownView(position, convertView, parent);
-				switch (position) {
-				case 0:
-					((TextView)view).setCompoundDrawablesWithIntrinsicBounds(R.drawable.ab_spinner_homeicon,0,0,0);
-					break;
-				default:
-					((TextView)view).setCompoundDrawablesWithIntrinsicBounds(R.drawable.ab_spinner_shopicon,0,0,0);
-					break;
+				int resource = R.drawable.ab_spinner_shopicon;
+				if ( position == 0 ){
+					resource = R.drawable.ab_spinner_homeicon;
 				}
+				((TextView)view).setCompoundDrawablesWithIntrinsicBounds(resource,0,0,0);
 				return view;
 			}
 		};
@@ -189,6 +294,7 @@ public class ShoppingOrganiserActivity extends SherlockListActivity implements A
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         getSupportActionBar().setDisplayShowHomeEnabled(false);
 		getSupportActionBar().setListNavigationCallbacks(navListAdapter, this);
+		getSupportActionBar().setSelectedNavigationItem(actionBarNavigationIndex);
 	}
 
 	@Override
@@ -218,8 +324,15 @@ public class ShoppingOrganiserActivity extends SherlockListActivity implements A
 			intent = new Intent(this, EditListsActivity.class);
 			startActivity(intent);
 			break;
+		case R.id.menu_item_continue:
+			continueShopping();
+			break;
 		case R.id.menu_item_restart:
 			restartShopping();
+			break;
+		case R.id.menu_item_settings:
+			intent = new Intent(this,SettingsActivity.class);
+			startActivity(intent);
 			break;
 		case R.id.menu_item_help:
 			showDialog(DIALOG_SHOPPING_HELP);
@@ -232,7 +345,7 @@ public class ShoppingOrganiserActivity extends SherlockListActivity implements A
 
 	private long getListId() {
 		int position = getSupportActionBar().getSelectedNavigationIndex();
-        return navListAdapter.getItemId(position);
+		return navListAdapter.getItemId(position);
 	}
 
 	private boolean listSetsFilter(long listId) {
@@ -276,6 +389,13 @@ public class ShoppingOrganiserActivity extends SherlockListActivity implements A
 		values.put(ShoppingContract.Items.ITEM_NEEDED, false);
 		values.put(ShoppingContract.Items.ITEM_BOUGHT, false);
 		contentResolver.update(url, values, null, null);
+		getSupportActionBar().setSelectedNavigationItem(0);
+	}
+
+	private void continueShopping() {
+		ContentResolver contentResolver = getContentResolver();
+		Uri url = ShoppingContract.Items.buildShoppedItemsUri();
+		contentResolver.update(url, null, null, null);
 	}
 
 }

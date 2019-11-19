@@ -5,14 +5,27 @@
         android:showAsAction="ifRoom"
         android:icon="@drawable/edit"
         android:title="@string/menu_edit_list" />
+
+    <item android:id="@+id/menu_item_continue"
+        android:showAsAction="ifRoom"
+        android:icon="@drawable/continue_shopping"
+        android:title="@string/menu_continue" />
+
     <item android:id="@+id/menu_item_restart"
         android:showAsAction="ifRoom"
         android:icon="@drawable/restart"
         android:title="@string/menu_restart" />
+
     <item android:id="@+id/menu_item_editLists"
         android:showAsAction="ifRoom"
         android:icon="@drawable/editlists"
         android:title="@string/menu_edit_lists" />
+
+    <item android:id="@+id/menu_item_settings"
+        android:showAsAction="never"
+        android:icon="@drawable/help"
+        android:title="@string/menu_settings" />
+
     <item android:id="@+id/menu_item_help"
         android:showAsAction="always"
         android:icon="@drawable/help"

@@ -2,6 +2,8 @@ package com.nadisoft.shopping.organiser.entities;
 
 public class ShoppingList extends BaseEntity{
 
+	private static final long serialVersionUID = -5606607223610036985L;
+
 	private String name;
 	private boolean setsFilter;
 

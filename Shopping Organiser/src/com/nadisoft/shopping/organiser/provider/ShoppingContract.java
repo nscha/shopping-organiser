@@ -4,6 +4,9 @@ import android.net.Uri;
 import android.provider.BaseColumns;
 
 public class ShoppingContract {
+	public static final String PACKAGE = "com.nadisoft.shopping.organiser";
+	public static final String DB_NAME = "shoppingOrganiser.db";
+	public static final String INNER_DATA_DB_PATH = "/data/"+PACKAGE+"/databases/"+DB_NAME;
 	/**
      * The authority for app contents.
      */
@@ -16,6 +19,7 @@ public class ShoppingContract {
      * Messages Path
      */
     private static final String PATH_ITEMS = "items";
+    private static final String PATH_ITEMS_SHOPPED = "shopped";
     private static final String PATH_LISTS = "lists";
     private static final String PATH_LIST_ITEMS_1 = "list";
     private static final String PATH_LIST_ITEMS_2 = "items";
@@ -95,6 +99,13 @@ public class ShoppingContract {
 	        	.appendPath(Integer.toString(to))
 	        	.appendPath(PATH_LIST_ITEMS_5)
 	        	.appendPath(Long.toString(itemId))
+	        	.build();
+        }
+
+        /** Build {@link Uri} for update needed items according to their bought status. */
+        public static Uri buildShoppedItemsUri() {
+            return CONTENT_URI.buildUpon()
+	        	.appendPath(PATH_ITEMS_SHOPPED)
 	        	.build();
         }
 

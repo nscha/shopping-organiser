@@ -35,10 +35,17 @@ public class EditItemsActivity extends SherlockListActivity{
 	private static final int DIALOG_EDIT_ITEMS_HELP = 0;
 	private static final int DIALOG_EDIT_ITEM_NAME = 1;
 	private static final int DIALOG_CONFIRM_ITEM_DELETE = 2;
-	
+
+	private static final String BUNDLE_ITEM_ON_EDITION = "BundleItemOnEdition";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+		if (savedInstanceState != null) {
+			itemOnEdition = (ShoppingItem) savedInstanceState.getSerializable(BUNDLE_ITEM_ON_EDITION);
+		}
+
         setContentView(R.layout.edit_items);
         long listId = getIntent().getLongExtra(EXTRA_LIST_ID, 1);
         getSupportActionBar().setSubtitle(getShoppingList(listId).getName());
@@ -47,6 +54,12 @@ public class EditItemsActivity extends SherlockListActivity{
         setUpList(listId);
         showFirstTimeHelp();
     }
+
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		outState.putSerializable(BUNDLE_ITEM_ON_EDITION, itemOnEdition);
+	}
 
 	private void setUpList(long listId) {
 		TouchListView tlv=(TouchListView)getListView();
@@ -154,7 +167,7 @@ public class EditItemsActivity extends SherlockListActivity{
 
 	private Dialog createEditItemsHelpDialog() {
 		HelpDialogBuilder builder = new HelpDialogBuilder(this, HelpDialogBuilder.HelpType.EDIT_ITEMS);
-		return builder.show();
+		return builder.create();
 	}
 
 	private Dialog createEditItemNameDialog(){
@@ -175,7 +188,7 @@ public class EditItemsActivity extends SherlockListActivity{
 	    			itemOnEdition = null;
 	    		}
 	    	});
-		return builder.show();
+		return builder.create();
 	}
 
 	private Dialog prepareEditItemNameDialog(Dialog dialog) {

@@ -33,16 +33,28 @@ public class EditListsActivity extends SherlockListActivity{
 	private static final int DIALOG_EDIT_LIST_NAME = 1;
 	private static final int DIALOG_CONFIRM_LIST_DELETE = 2;
 
+	private static final String BUNDLE_LIST_ON_EDITION = "BundleListOnEdition";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.edit_lists);
+
+		if (savedInstanceState != null) {
+			listOnEdition = (ShoppingList) savedInstanceState.getSerializable(BUNDLE_LIST_ON_EDITION);
+		}
 
         newListNameEditText = (EditText) findViewById(R.id.newListNameEditText);
 
 		setUpList();
 		showFirstTimeHelp();
     }
+
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		outState.putSerializable(BUNDLE_LIST_ON_EDITION, listOnEdition);
+	}
 
 	private void setUpList() {
 		@SuppressWarnings("deprecation")
@@ -149,7 +161,7 @@ public class EditListsActivity extends SherlockListActivity{
 
 	private Dialog createEditListsHelpDialog() {
 		HelpDialogBuilder builder = new HelpDialogBuilder(this, HelpDialogBuilder.HelpType.EDIT_LISTS);
-		return builder.show();
+		return builder.create();
 	}
 
 	private Dialog createEditListNameDialog(){

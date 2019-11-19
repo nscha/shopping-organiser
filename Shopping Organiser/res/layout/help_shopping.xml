@@ -44,6 +44,12 @@
 		    android:text="@string/shopping_help_quick_reference_menu_edit_lists"
 		    android:drawableLeft="@drawable/editlists" />
 
+       <TextView
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:text="@string/shopping_help_quick_reference_menu_continue"
+		    android:drawableLeft="@drawable/continue_shopping" />
+
 	    <TextView
 		    android:layout_width="wrap_content"
 		    android:layout_height="wrap_content"

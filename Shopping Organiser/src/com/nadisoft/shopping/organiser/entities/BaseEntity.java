@@ -1,6 +1,10 @@
 package com.nadisoft.shopping.organiser.entities;
 
-public class BaseEntity {
+import java.io.Serializable;
+
+public class BaseEntity implements Serializable {
+
+	private static final long serialVersionUID = 1596450066696262923L;
 
 	private long _id;
 

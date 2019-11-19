@@ -28,6 +28,7 @@ public class ShoppingProvider extends ContentProvider {
     private static final int LISTS_ID = 111; // one list by id
     private static final int LIST_ITEMS = 120; // all items ordered by list
     private static final int LIST_ITEMS_MOVE = 121; // move item in list
+    private static final int ITEMS_SHOPPED = 130; // set needed if not bought
 
     /**
      * Local DB Helper
@@ -43,6 +44,7 @@ public class ShoppingProvider extends ContentProvider {
         final String authority = ShoppingContract.CONTENT_AUTHORITY;
 
         matcher.addURI(authority, "items", ITEMS);
+        matcher.addURI(authority, "items/shopped", ITEMS_SHOPPED);
         matcher.addURI(authority, "items/*", ITEMS_ID);
         matcher.addURI(authority, "lists", LISTS);
         matcher.addURI(authority, "lists/*", LISTS_ID);
@@ -74,6 +76,7 @@ public class ShoppingProvider extends ContentProvider {
 	        case LISTS_ID:
 	    		return Lists.CONTENT_ITEM_TYPE;
 	        case LIST_ITEMS_MOVE:
+	        case ITEMS_SHOPPED:
 	        	return null;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
@@ -263,6 +266,12 @@ public class ShoppingProvider extends ContentProvider {
 	        	db.endTransaction();
 	        	extraUriToNotify = ShoppingContract.Items.buildItemsUri();
 	        	break;
+	        case ITEMS_SHOPPED:
+	        	db.beginTransaction();
+	        	count = combineBoughtToNeeded(db);
+	        	db.setTransactionSuccessful();
+	        	db.endTransaction();
+	        	break;
 	        case ITEMS_ID:
 	            itemId = ContentUris.parseId(uri);
 	            count = db.update(ShoppingDatabase.Tables.ITEMS, values,
@@ -289,7 +298,25 @@ public class ShoppingProvider extends ContentProvider {
         return count;
     }
 
-    private int insertItemInAllLists(SQLiteDatabase db, long newItemId){
+    private int combineBoughtToNeeded(SQLiteDatabase db) {
+		String newNeeded = ShoppingContract.Items.ITEM_NEEDED +" - "+ShoppingContract.Items.ITEM_BOUGHT;
+
+		StringBuilder sql = new StringBuilder(120);
+		sql.append("UPDATE ");
+        sql.append(ShoppingDatabase.Tables.ITEMS);
+        sql.append(" SET ");
+        sql.append(ShoppingContract.Items.ITEM_NEEDED);
+        sql.append("="+newNeeded);
+        sql.append(", ");
+        sql.append(ShoppingContract.Items.ITEM_BOUGHT);
+        sql.append("=0");
+
+        db.execSQL(sql.toString());
+
+		return 80;
+	}
+
+	private int insertItemInAllLists(SQLiteDatabase db, long newItemId){
     	int pos = getAvailablePosition(db);
     	Cursor cursor = db.query(ShoppingDatabase.Tables.LISTS, new String[]{ShoppingContract.Lists._ID}, null, null, null, null, null);
 		ContentValues values = new ContentValues();
