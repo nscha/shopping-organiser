@@ -15,9 +15,13 @@ public class ShoppingContract {
     /**
      * Messages Path
      */
-    //private static final String PATH_MESSAGES = "messages";
     private static final String PATH_ITEMS = "items";
     private static final String PATH_LISTS = "lists";
+    private static final String PATH_LIST_ITEMS_1 = "list";
+    private static final String PATH_LIST_ITEMS_2 = "items";
+    private static final String PATH_LIST_ITEMS_3 = "from";
+    private static final String PATH_LIST_ITEMS_4 = "to";
+    private static final String PATH_LIST_ITEMS_5 = "move";
     private static final String PATH_ORDERINGS = "orderings";
 
     interface MessageColumns {
@@ -28,7 +32,6 @@ public class ShoppingContract {
 		String ITEM_NAME = "item_name";
 		String ITEM_NEEDED = "item_needed";
 		String ITEM_BOUGHT = "item_bought";
-		String ITEM_TMP_POSITION = "item_tmp_pos"; //DELME
 	}
 
     interface ListColumns {
@@ -41,62 +44,64 @@ public class ShoppingContract {
 		String ORDERING_LIST_ID = "ordering_list_id";
 		String ORDERING_POSITION = "ordering_pos";
 	}
-/*
-    public static class Messages implements MessageColumns, BaseColumns {
-    	// Messages content Uri.
-    	public static final Uri CONTENT_URI =
-                BASE_CONTENT_URI.buildUpon().appendPath(PATH_MESSAGES).build();
-		// Messages content type
-		public static final String CONTENT_TYPE = "vnd.android.cursor.dir/vnd.cursoandroid.messages";
-		public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/vnd.cursoandroid.messages";
-		
-		// Default projection
-		public static final String[] DEFAULT_PROJECTION = new String[] {
-				ShoppingOrganiserContract.Messages._ID, ShoppingOrganiserContract.Messages.MESSAGE_TEXT };
-        // Default "ORDER BY" clause.
-        public static final String DEFAULT_SORT = BaseColumns._ID + " ASC";
-    	
-    	// Build {@link Uri} for request all messages.
-        public static Uri buildMessagesUri() {
-            return CONTENT_URI.buildUpon().build();
-        }
 
-        // Build {@link Uri} for requested message.
-        public static Uri buildMessageUri(long id) {
-            return CONTENT_URI.buildUpon().appendPath(Long.toString(id)).build();
-        }
-    }
-*/
-    
     public static class Items implements ItemColumns, BaseColumns {
     	/** Items content Uri. */
     	public static final Uri CONTENT_URI =
                 BASE_CONTENT_URI.buildUpon().appendPath(PATH_ITEMS).build();
-		/** Items content type */
+
+    	/** Items content type */
 		public static final String CONTENT_TYPE = "vnd.android.cursor.dir/vnd.cursoandroid.items";
 		public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/vnd.cursoandroid.items";
 
 		/** Default projection */
 		public static final String[] DEFAULT_PROJECTION = new String[] {
 				ShoppingContract.Items._ID, ShoppingContract.Items.ITEM_NAME,
-				ShoppingContract.Items.ITEM_NEEDED, ShoppingContract.Items.ITEM_BOUGHT
-				,ShoppingContract.Items.ITEM_TMP_POSITION // DELME
-				};
+				ShoppingContract.Items.ITEM_NEEDED, ShoppingContract.Items.ITEM_BOUGHT };
         /** Default "ORDER BY" clause. */
-        public static final String DEFAULT_SORT = ITEM_TMP_POSITION + " ASC"; // DELME
-//        public static final String DEFAULT_SORT = BaseColumns._ID + " ASC";
+        public static final String DEFAULT_SORT = BaseColumns._ID + " ASC";
 
-    	/** Build {@link Uri} for request all messages. */
-        public static Uri buildItemsUri() {
-            return CONTENT_URI.buildUpon().build();
+		public static final String DEFAULT_JOIN_TABLES = 
+				ShoppingDatabase.Tables.ITEMS + " JOIN " + ShoppingDatabase.Tables.ORDERINGS +
+				" ON (" + ShoppingDatabase.Tables.ITEMS+"."+ShoppingContract.Items._ID + " = " +
+				ShoppingContract.Orderings.ORDERING_ITEM_ID + ")"; 
+		/** Default projection for joining with Orderings*/
+		public static final String[] DEFAULT_JOIN_PROJECTION = new String[] {
+				ShoppingDatabase.Tables.ITEMS+"."+ShoppingContract.Items._ID,
+				ShoppingContract.Items.ITEM_NAME,
+				ShoppingContract.Items.ITEM_NEEDED, ShoppingContract.Items.ITEM_BOUGHT,
+				ShoppingContract.Orderings.ORDERING_POSITION,
+				ShoppingContract.Orderings.ORDERING_LIST_ID};
+        /** Default "ORDER BY" clause for joining with Orderings. */
+        public static final String DEFAULT_JOIN_SORT = Orderings.ORDERING_POSITION + " ASC";
+
+        /** Build {@link Uri} for request ordered items according to a list. */
+        public static Uri buildListItemsUri(long listId) {
+            return BASE_CONTENT_URI.buildUpon()
+            	.appendPath(PATH_LIST_ITEMS_1)
+            	.appendPath(Long.toString(listId))
+            	.appendPath(PATH_LIST_ITEMS_2)
+            	.build();
         }
 
-        public static Uri buildMoveItemUri(long id, int from, int to) {
-            return CONTENT_URI.buildUpon()
-            	.appendPath(Long.toString(id))
-            	.appendPath(Integer.toString(from))
-            	.appendPath(Integer.toString(to))
-            	.build();
+        /** Build {@link Uri} for update ordering for items in a list. */
+        public static Uri buildMoveListItemUri(long listId, long itemId, int from, int to) {
+            return BASE_CONTENT_URI.buildUpon()
+	        	.appendPath(PATH_LIST_ITEMS_1)
+	        	.appendPath(Long.toString(listId))
+	        	.appendPath(PATH_LIST_ITEMS_2)
+	        	.appendPath(PATH_LIST_ITEMS_3)
+	        	.appendPath(Integer.toString(from))
+	        	.appendPath(PATH_LIST_ITEMS_4)
+	        	.appendPath(Integer.toString(to))
+	        	.appendPath(PATH_LIST_ITEMS_5)
+	        	.appendPath(Long.toString(itemId))
+	        	.build();
+        }
+
+    	/** Build {@link Uri} for reference to all items. */
+        public static Uri buildItemsUri() {
+            return CONTENT_URI.buildUpon().build();
         }
 
         /** Build {@link Uri} for requested message. */
@@ -148,14 +153,5 @@ public class ShoppingContract {
         /** Default "ORDER BY" clause. */
         public static final String DEFAULT_SORT = ORDERING_POSITION + " ASC";
 
-    	/** Build {@link Uri} for request all messages. */
-        public static Uri buildOrderingsUri() {
-            return CONTENT_URI.buildUpon().build();
-        }
-
-        /** Build {@link Uri} for requested message. */
-        public static Uri buildOrderingUri(long id) {
-            return CONTENT_URI.buildUpon().appendPath(Long.toString(id)).build();
-        }
     }
 }

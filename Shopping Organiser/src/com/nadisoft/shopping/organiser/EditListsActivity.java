@@ -13,7 +13,6 @@ import android.text.InputType;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.SimpleCursorAdapter.ViewBinder;
 import android.widget.TextView;
@@ -36,7 +35,6 @@ public class EditListsActivity extends SherlockListActivity{
         setContentView(R.layout.edit_lists);
 
         newListNameEditText = (EditText) findViewById(R.id.newListNameEditText);
-        ListView lv = getListView();
 
 		@SuppressWarnings("deprecation")
 		Cursor cursor = managedQuery(ShoppingContract.Lists.buildListsUri(), 

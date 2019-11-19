@@ -14,7 +14,6 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.SimpleCursorAdapter.ViewBinder;
 
@@ -24,35 +23,37 @@ import com.nadisoft.shopping.organiser.entities.ShoppingItem;
 import com.nadisoft.shopping.organiser.provider.ShoppingContract;
 
 public class EditItemsActivity extends SherlockListActivity{
-	private EditText newItemNameEditText;
+	public static final String EXTRA_LIST_ID = "com.nadisoft.shopping.organiser.EditItemsActivity.LISTID";
+
+    private EditText newItemNameEditText;
 	private EditText editItemNameEditText;
 	private ShoppingItem itemOnEdition;
-	private SimpleCursorAdapter listAdapter;
 
 	static final int DIALOG_EDIT_ITEM_NAME = 0;
 	static final int DIALOG_CONFIRM_ITEM_DELETE = 1;
-
+	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.edit_items);
 
+        long listId = getIntent().getLongExtra(EXTRA_LIST_ID, 1);
+
         newItemNameEditText = (EditText) findViewById(R.id.newItemNameEditText);
         TouchListView tlv=(TouchListView)getListView();
-		
+
         @SuppressWarnings("deprecation")
-    	Cursor cursor = managedQuery(ShoppingContract.Items.buildItemsUri(), 
+    	Cursor cursor = managedQuery(ShoppingContract.Items.buildListItemsUri(listId), 
 				null, null, null, null);
 
         @SuppressWarnings("deprecation")
-		SimpleCursorAdapter adapter = new SimpleCursorAdapter(this,
+		SimpleCursorAdapter listAdapter = new SimpleCursorAdapter(this,
 				R.layout.edit_item, cursor,
 				new String[] { ShoppingContract.Items._ID,
 				ShoppingContract.Items.ITEM_NAME },
 				new int[] { R.id.editItemButton,
 				R.id.itemText });
 
-        listAdapter = adapter;
 		listAdapter.setViewBinder(new ViewBinder(){
 			@Override
 			public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
@@ -80,21 +81,26 @@ public class EditItemsActivity extends SherlockListActivity{
 	private TouchListView.DropListener onDrop=new TouchListView.DropListener() {
 		@Override
 		public void drop(int from, int to) {
-			Cursor cursor=(Cursor)listAdapter.getItem(from);
+			SimpleCursorAdapter adapter = (SimpleCursorAdapter)getListAdapter();
+			Cursor cursor=(Cursor)adapter.getItem(from);
 			int idIdx = cursor.getColumnIndex(ShoppingContract.Items._ID);
 			int nameIdx = cursor.getColumnIndex(ShoppingContract.Items.ITEM_NAME);
-			int posIdx = cursor.getColumnIndex(ShoppingContract.Items.ITEM_TMP_POSITION);
-			
-			Log.i("NADIA", "grabbed item id " + cursor.getLong(idIdx) + " name: " + cursor.getString(nameIdx)
-					+ " from " + from + " to " + to + " (pos "+cursor.getInt(posIdx)+")");
-			moveItem(cursor.getLong(idIdx), from,to);
+			int posIdx = cursor.getColumnIndex(ShoppingContract.Orderings.ORDERING_POSITION);
+			int listIdIdx = cursor.getColumnIndex(ShoppingContract.Orderings.ORDERING_LIST_ID);
+
+			long itemId = cursor.getLong(idIdx);
+			long listId = cursor.getLong(listIdIdx);
+			Log.i("NADIA", "grabbed item id " + itemId + " name: " + cursor.getString(nameIdx)
+					+ " from " + from + " to " + to + " (pos "+cursor.getInt(posIdx)+") on list id "+listId);
+			moveItem(itemId, listId, from,to);
 		}
 	};
 
 	private TouchListView.RemoveListener onRemove=new TouchListView.RemoveListener() {
 		@Override
 		public void remove(int which) {
-				Cursor cursor=(Cursor)listAdapter.getItem(which);
+				SimpleCursorAdapter adapter = (SimpleCursorAdapter)getListAdapter();
+				Cursor cursor=(Cursor)adapter.getItem(which);
 				int idIdx = cursor.getColumnIndex(ShoppingContract.Items._ID);
 				startDeletingItem(cursor.getLong(idIdx));
 		}
@@ -243,9 +249,9 @@ public class EditItemsActivity extends SherlockListActivity{
 		}
 	}
 
-	private void moveItem(long id, int from, int to) {
+	private void moveItem(long itemId, long listId, int from, int to) {
 		ContentResolver contentResolver = getContentResolver();
-		Uri uri = ShoppingContract.Items.buildMoveItemUri(id, from, to);
+		Uri uri = ShoppingContract.Items.buildMoveListItemUri(listId, itemId, from, to);
 		contentResolver.update(uri, null, null, null);
 	}
 

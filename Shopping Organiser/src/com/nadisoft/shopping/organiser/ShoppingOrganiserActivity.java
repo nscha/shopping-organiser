@@ -6,11 +6,9 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.View.OnClickListener;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
-import android.widget.SimpleCursorAdapter.ViewBinder;
 
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockListActivity;
@@ -20,6 +18,7 @@ import com.nadisoft.shopping.organiser.provider.ShoppingContract;
 
 public class ShoppingOrganiserActivity extends SherlockListActivity implements ActionBar.OnNavigationListener {
     //private TextView mSelected;
+	SimpleCursorAdapter navListAdapter;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -32,18 +31,28 @@ public class ShoppingOrganiserActivity extends SherlockListActivity implements A
     }
 
     private void setUpList() {
+        long listId = getListId();
         ListView lv = getListView();
         lv.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
-		
+
 		@SuppressWarnings("deprecation")
-		Cursor cursor = managedQuery(ShoppingContract.Items.buildItemsUri(), 
+		Cursor cursor = managedQuery(ShoppingContract.Items.buildListItemsUri(listId), 
 				null, null, null, null);
+		@SuppressWarnings("deprecation")
 		SimpleCursorAdapter itemsAdapter = new SimpleCursorAdapter(this,
 				R.layout.item, cursor,
 				new String[] { ShoppingContract.Items.ITEM_NAME },
 				new int[] { R.id.itemText });
 		setListAdapter(itemsAdapter);
 	}
+
+    private void changeList(long listId){
+    	SimpleCursorAdapter adapter = (SimpleCursorAdapter) getListAdapter();
+    	@SuppressWarnings("deprecation")
+		Cursor cursor = managedQuery(ShoppingContract.Items.buildListItemsUri(listId), 
+				null, null, null, null);
+    	adapter.changeCursor(cursor);
+    }
 
 	private void setUpActionBar() {
 		@SuppressWarnings("deprecation")
@@ -83,19 +92,20 @@ public class ShoppingOrganiserActivity extends SherlockListActivity implements A
 				return view;
 			}
 		};
+		this.navListAdapter = navListAdapter;
 
         navListAdapter.setDropDownViewResource(R.layout.sherlock_spinner_dropdown_item);
 
         getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         getSupportActionBar().setDisplayShowHomeEnabled(false);
-        getSupportActionBar().setListNavigationCallbacks(navListAdapter, this);
+		getSupportActionBar().setListNavigationCallbacks(navListAdapter, this);
 	}
 
 	@Override
-    public boolean onNavigationItemSelected(int itemPosition, long itemId) {
-        //mSelected.setText("Selected: " + mLocations[itemPosition]);
-        return true;
+    public boolean onNavigationItemSelected(int itemPosition, long listId) {
+		changeList(listId);
+		return true;
     }
 
     @Override
@@ -111,6 +121,7 @@ public class ShoppingOrganiserActivity extends SherlockListActivity implements A
     	switch (item.getItemId()) {
 		case R.id.menu_item_edit:
 			intent = new Intent(this, EditItemsActivity.class);
+			intent.putExtra(EditItemsActivity.EXTRA_LIST_ID, getListId());
 			startActivity(intent);
 			break;
 		case R.id.menu_item_editLists:
@@ -121,6 +132,11 @@ public class ShoppingOrganiserActivity extends SherlockListActivity implements A
 			break;
 		}
 		return super.onOptionsItemSelected(item);
+	}
+    
+	private long getListId() {
+		int position = getSupportActionBar().getSelectedNavigationIndex();
+        return navListAdapter.getItemId(position);
 	}
     
 }

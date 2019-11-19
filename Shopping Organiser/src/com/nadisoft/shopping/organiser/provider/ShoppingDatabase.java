@@ -8,6 +8,7 @@ import android.provider.BaseColumns;
 
 import com.nadisoft.shopping.organiser.provider.ShoppingContract.ItemColumns;
 import com.nadisoft.shopping.organiser.provider.ShoppingContract.ListColumns;
+import com.nadisoft.shopping.organiser.provider.ShoppingContract.OrderingColumns;
 //import com.nadisoft.shopping.organiser.provider.ShoppingOrganiserContract.OrderingColumns;
 
 public class ShoppingDatabase extends SQLiteOpenHelper {
@@ -29,13 +30,24 @@ public class ShoppingDatabase extends SQLiteOpenHelper {
 
 	@Override
 	public void onCreate(SQLiteDatabase db) {
+		createTables(db);
+		createFirstLists(db);
+	}
 
+	@Override
+	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+		if (oldVersion != DATABASE_VERSION) {
+            dropTables(db);
+            onCreate(db);
+        }
+	}
+
+	protected void createTables(SQLiteDatabase db) {
 		db.execSQL("CREATE TABLE " + Tables.ITEMS + " (" 
 				+ BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
 				+ ItemColumns.ITEM_NAME + " TEXT NOT NULL,"
 				+ ItemColumns.ITEM_NEEDED + " BOOLEAN NOT NULL,"
 				+ ItemColumns.ITEM_BOUGHT + " BOOLEAN NOT NULL,"
-				+ ItemColumns.ITEM_TMP_POSITION + " INT NOT NULL," //DELME
 				+ "UNIQUE (" + BaseColumns._ID + ") ON CONFLICT REPLACE)");
 
 		db.execSQL("CREATE TABLE " + Tables.LISTS + " (" 
@@ -44,6 +56,15 @@ public class ShoppingDatabase extends SQLiteOpenHelper {
 				+ ListColumns.LIST_SETS_FILTER + " BOOLEAN NOT NULL,"
 				+ "UNIQUE (" + BaseColumns._ID + ") ON CONFLICT REPLACE)");
 
+		db.execSQL("CREATE TABLE " + Tables.ORDERINGS + " (" 
+				+ BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+				+ OrderingColumns.ORDERING_ITEM_ID + " INTEGER NOT NULL,"
+				+ OrderingColumns.ORDERING_LIST_ID + " INTEGER NOT NULL,"
+				+ OrderingColumns.ORDERING_POSITION + " INTEGER NOT NULL,"
+				+ "UNIQUE (" + BaseColumns._ID + ") ON CONFLICT REPLACE)");
+	}
+
+	protected void createFirstLists(SQLiteDatabase db) {
 		ContentValues values = new ContentValues();
 		values.put(ListColumns.LIST_NAME, "Home");
 		values.put(ListColumns.LIST_SETS_FILTER, true);
@@ -53,23 +74,11 @@ public class ShoppingDatabase extends SQLiteOpenHelper {
 		values.put(ListColumns.LIST_NAME, "Shop");
 		values.put(ListColumns.LIST_SETS_FILTER, false);
 		db.insert(Tables.LISTS, null, values);
-/*
-		db.execSQL("CREATE TABLE " + Tables.ORDERINGS + " (" 
-				+ BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
-				+ OrderingColumns.ORDERING_ITEM_ID + " INTEGER NOT NULL,"
-				+ OrderingColumns.ORDERING_LIST_ID + " INTEGER NOT NULL,"
-				+ OrderingColumns.ORDERING_POSITION + " INTEGER NOT NULL,"
-				+ "UNIQUE (" + BaseColumns._ID + ") ON CONFLICT REPLACE)");
-*/
 	}
 
-	@Override
-	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-		if (oldVersion != DATABASE_VERSION) {
-            db.execSQL("DROP TABLE IF EXISTS " + Tables.ITEMS);
-            db.execSQL("DROP TABLE IF EXISTS " + Tables.LISTS);
-            db.execSQL("DROP TABLE IF EXISTS " + Tables.ORDERINGS);
-            onCreate(db);
-        }
+	protected void dropTables(SQLiteDatabase db) {
+		db.execSQL("DROP TABLE IF EXISTS " + Tables.ITEMS);
+		db.execSQL("DROP TABLE IF EXISTS " + Tables.LISTS);
+		db.execSQL("DROP TABLE IF EXISTS " + Tables.ORDERINGS);
 	}
 }
