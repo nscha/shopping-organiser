@@ -18,6 +18,8 @@ import android.widget.SimpleCursorAdapter.ViewBinder;
 import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockListActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuItem;
 import com.nadisoft.shopping.organiser.entities.ShoppingList;
 import com.nadisoft.shopping.organiser.provider.ShoppingContract;
 
@@ -36,6 +38,10 @@ public class EditListsActivity extends SherlockListActivity{
 
         newListNameEditText = (EditText) findViewById(R.id.newListNameEditText);
 
+		setUpList();
+    }
+
+	private void setUpList() {
 		@SuppressWarnings("deprecation")
 		Cursor cursor = managedQuery(ShoppingContract.Lists.buildListsUri(), 
 				null, null, null, null);
@@ -95,7 +101,7 @@ public class EditListsActivity extends SherlockListActivity{
 			}
 		});
 		setListAdapter(listAdapter);
-    }
+	}
 
 	@Override
 	protected Dialog onCreateDialog(int id) {
@@ -171,6 +177,27 @@ public class EditListsActivity extends SherlockListActivity{
 	private Dialog prepareEditListNameDialog(Dialog dialog) {
 		editListNameEditText.setText(listOnEdition.getName());
 		return dialog;
+	}
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+    	super.onCreateOptionsMenu(menu);
+        getSupportMenuInflater().inflate(R.menu.edit_menu, menu);
+        return true;
+    }
+
+    @Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+    	switch (item.getItemId()) {
+		case R.id.menu_item_done:
+			finish();
+			break;
+		case R.id.menu_item_help:
+			break;
+		default:
+			break;
+		}
+		return super.onOptionsItemSelected(item);
 	}
 
 	public void addNewList(View view) {

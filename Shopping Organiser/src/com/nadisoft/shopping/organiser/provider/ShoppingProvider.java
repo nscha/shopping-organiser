@@ -10,7 +10,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.nadisoft.shopping.organiser.provider.ShoppingContract.Items;
 import com.nadisoft.shopping.organiser.provider.ShoppingContract.Lists;
@@ -198,29 +197,6 @@ public class ShoppingProvider extends ContentProvider {
         throw new SQLException("Failed to insert row into " + uri);
     }
 
-	/*
-    private int[][] getAvailablePositions(SQLiteDatabase db) { //DELME
-    	String[] projection = new String[] {
-    			ShoppingContract.Orderings.ORDERING_LIST_ID,
-    			"max("+ShoppingContract.Orderings.ORDERING_POSITION+")"}; 
-		Cursor cursor = db.query(ShoppingDatabase.Tables.ORDERINGS, projection, null, null, ShoppingContract.Orderings.ORDERING_LIST_ID, null, null);
-		int rows = cursor.getCount();
-		int columns = cursor.getColumnCount();
-		int[][] positions = new int[rows][columns];
-		int row = 0;
-		while ( cursor.moveToNext() ){
-			if (cursor.isNull(0)){
-				Log.d("NADIA","EMPTY -> available position "+0);
-				return 0;
-			}
-			positions[row][0] = cursor.getInt(0);
-			positions[row++][1] = cursor.getInt(1) + 1;
-		}
-		cursor.close();
-		Log.d("NADIA","available position "+positions);
-		return positions;
-	} */
-
 	@Override
     public int delete(Uri uri, String where, String[] whereArgs) {
         SQLiteDatabase db = mOpenHelper.getWritableDatabase();
@@ -271,7 +247,6 @@ public class ShoppingProvider extends ContentProvider {
 	            count = db.update(ShoppingDatabase.Tables.ITEMS, values, where, whereArgs);
 	            break;
 	        case LIST_ITEMS_MOVE:
-	        	Log.i("NADIA","ITEMS_MOVE");
 	        	listId = uri.getPathSegments().get(1);
 	        	itemId = ContentUris.parseId(uri);
 	        	String from = uri.getPathSegments().get(4);
@@ -283,7 +258,6 @@ public class ShoppingProvider extends ContentProvider {
 	    		String[] moveItemSelectionValue = new String[]{String.valueOf(itemId), listId};
 	    		ContentValues newValue = new ContentValues();
 	    		newValue.put(ShoppingContract.Orderings.ORDERING_POSITION, to);
-	    		Log.i("NADIA","ITEMS_MOVE MOVE: id"+itemId+" to "+to);
 	    		count += db.update(ShoppingDatabase.Tables.ORDERINGS, newValue, moveItemSelection, moveItemSelectionValue);
 	        	db.setTransactionSuccessful();
 	        	db.endTransaction();
@@ -368,12 +342,10 @@ public class ShoppingProvider extends ContentProvider {
 		Cursor cursor = db.query(ShoppingDatabase.Tables.ORDERINGS, projection, null, null, null, null, null);
 		cursor.moveToFirst();
 		if (cursor.isNull(0)){
-			Log.d("NADIA","EMPTY -> available position "+0);
 			return 0;
 		}
 		int pos = cursor.getInt(0) + 1;
 		cursor.close();
-		Log.d("NADIA","available position "+pos);
 		return pos;
 	}
 
@@ -406,8 +378,6 @@ public class ShoppingProvider extends ContentProvider {
         sql.append(selection);
 
         db.execSQL(sql.toString());
-
-        Log.i("NADIA","ITEMS_MOVE SQL: " + sql.toString());
 
 		return Math.abs(from - to);
 	}
@@ -443,7 +413,5 @@ public class ShoppingProvider extends ContentProvider {
         sql.append(selection);
 
         db.execSQL(sql.toString());
-        
-        Log.i("NADIA","ITEMS_DEL SQL: " + sql.toString());
 	}
 }

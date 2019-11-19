@@ -10,7 +10,6 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.InputType;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.EditText;
@@ -18,8 +17,11 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.SimpleCursorAdapter.ViewBinder;
 
 import com.actionbarsherlock.app.SherlockListActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuItem;
 import com.commonsware.cwac.tlv.TouchListView;
 import com.nadisoft.shopping.organiser.entities.ShoppingItem;
+import com.nadisoft.shopping.organiser.entities.ShoppingList;
 import com.nadisoft.shopping.organiser.provider.ShoppingContract;
 
 public class EditItemsActivity extends SherlockListActivity{
@@ -36,8 +38,8 @@ public class EditItemsActivity extends SherlockListActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.edit_items);
-
         long listId = getIntent().getLongExtra(EXTRA_LIST_ID, 1);
+        getSupportActionBar().setSubtitle(getShoppingList(listId).getName());
 
         newItemNameEditText = (EditText) findViewById(R.id.newItemNameEditText);
         TouchListView tlv=(TouchListView)getListView();
@@ -84,14 +86,10 @@ public class EditItemsActivity extends SherlockListActivity{
 			SimpleCursorAdapter adapter = (SimpleCursorAdapter)getListAdapter();
 			Cursor cursor=(Cursor)adapter.getItem(from);
 			int idIdx = cursor.getColumnIndex(ShoppingContract.Items._ID);
-			int nameIdx = cursor.getColumnIndex(ShoppingContract.Items.ITEM_NAME);
-			int posIdx = cursor.getColumnIndex(ShoppingContract.Orderings.ORDERING_POSITION);
 			int listIdIdx = cursor.getColumnIndex(ShoppingContract.Orderings.ORDERING_LIST_ID);
 
 			long itemId = cursor.getLong(idIdx);
 			long listId = cursor.getLong(listIdIdx);
-			Log.i("NADIA", "grabbed item id " + itemId + " name: " + cursor.getString(nameIdx)
-					+ " from " + from + " to " + to + " (pos "+cursor.getInt(posIdx)+") on list id "+listId);
 			moveItem(itemId, listId, from,to);
 		}
 	};
@@ -182,6 +180,27 @@ public class EditItemsActivity extends SherlockListActivity{
 		return builder.create();
 	}
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+    	super.onCreateOptionsMenu(menu);
+        getSupportMenuInflater().inflate(R.menu.edit_menu, menu);
+        return true;
+    }
+
+    @Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+    	switch (item.getItemId()) {
+		case R.id.menu_item_done:
+			finish();
+			break;
+		case R.id.menu_item_help:
+			break;
+		default:
+			break;
+		}
+		return super.onOptionsItemSelected(item);
+	}
+
 	public void addNewItem(View view) {
 		String name = newItemNameEditText.getText().toString();
     	if ( name.length() > 0 ) {
@@ -215,6 +234,22 @@ public class EditItemsActivity extends SherlockListActivity{
     		deleteItem(id);
     	}
     	itemOnEdition = null;
+	}
+
+	private ShoppingList getShoppingList(long id) {
+		ContentResolver contentResolver = getContentResolver();
+		Uri uri = ShoppingContract.Lists.buildListUri(id);
+		Cursor cursor = contentResolver.query(uri, null, null, null, null);
+		cursor.moveToFirst();
+		String name = cursor.getString(cursor.getColumnIndex(ShoppingContract.Lists.LIST_NAME));
+		boolean setsFilter = pointedListSetsFilter(cursor);
+		ShoppingList shoppingList = new ShoppingList(name, setsFilter);
+		shoppingList.setId(id);
+		return shoppingList;
+	}
+
+	private boolean pointedListSetsFilter(Cursor cursor) {
+		return 1 == cursor.getInt(cursor.getColumnIndex(ShoppingContract.Lists.LIST_SETS_FILTER));
 	}
 
 	private ShoppingItem getShoppingItem(long id) {

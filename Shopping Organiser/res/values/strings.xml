@@ -1,17 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <string name="hello">Hello World, ShoppingOrganiserActivity!</string>
     <string name="app_name">Shopping Organiser</string>
     <string name="editingItemActivityLabel">Edit Items</string>
     <string name="editingListActivityLabel">Edit Lists</string>
-    <string name="new_list">New List</string>
-    <string name="new_item">New Item</string>
+    <string name="menu_edit_list">Edit this list</string>
+    <string name="menu_edit_lists">Edit lists</string>
+    <string name="menu_restart">Restart shopping</string>
+    <string name="menu_done">Done</string>
+    <string name="menu_help">Help</string>
+    <string name="new_list">New list</string>
+    <string name="new_item">New item</string>
     <string name="add_item">Add</string>
 	<string name="remove_item">Remove</string>
-    <string name="edit">Edit</string>
+    <string name="edit_name">Edit name</string>
     <string name="list_name_prompt">New list name:</string>
     <string name="item_name_prompt">New item name:</string>
+    <string name="grabber_description">Drag to reorder or delete</string>
     <string name="list_del_prompt">Are you sure you wish to delete this list? This action cannot be undone</string>
     <string name="item_del_prompt">Are you sure you wish to delete this item from all lists? This action cannot be undone</string>
     <string name="ok">OK</string>

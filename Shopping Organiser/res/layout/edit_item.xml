@@ -10,28 +10,23 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
 		android:src="@drawable/edit"
+		android:contentDescription="@string/edit_name"
 		/>
 	<TextView android:id="@+id/itemText"
        android:textAppearance="?android:attr/textAppearanceMedium"
-       android:layout_width="wrap_content"
+       android:layout_width="0dip"
        android:paddingLeft="9dip"
        android:paddingRight="9dip"
        android:layout_height="wrap_content"
-       android:layout_alignWithParentIfMissing="true"
-       android:layout_alignParentLeft="true"
-       android:layout_toLeftOf="@id/icon"
-       android:layout_centerVertical="true"
        android:ellipsize="marquee"
        android:singleLine="true"
        android:layout_weight="1"
        />
 
     <ImageView android:id="@+id/icon"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentBottom="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
 		android:src="@drawable/grabber"
+		android:contentDescription="@string/grabber_description"
 		/>
 </LinearLayout>
